@@ -24,6 +24,11 @@ SFR (Special Function Registers) = These are special registers used to control a
               
 Stack Mechanism =The stack temporarily stores return addresses when the program calls another function or subroutine.
                   It helps the processor know where to come back after the subroutine finishes.
+* Stack Pointer or  Stack Control = PIC16F72 does not have a normal user-accessible Stack Pointer register.  It uses a hardware stack to manage return addresses.
+* CALL – Used to go to a subroutine. The return address is saved in the stack.
+* RETURN – Used to come back from the subroutine to the main program.
+* RETLW – Returns from a subroutine and also loads a value into the W register.
+* RETFIE – Used to return from an interrupt routine.
                   
 
 
