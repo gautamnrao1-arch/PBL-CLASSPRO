@@ -88,14 +88,14 @@ Java language is been preferred for this project.<br>
                                           | Simulator Status/            |
                                           |             Visualization    |
                                           |                              |
-                                          --------------------------------
+                                          -------------------------------- 
 
 <b>INITIAL DEVELOPMENT PLAN<b><br>
 
-Phase                                                       Work<br>
-
-Phase 1                                     Study PIC16F72 architecture, registers, memory organization and instruction set<br>
-Phase 2                                     Design the simulator architecture and data structures<br>
+Phase                |                                     Work<br>
+                     |
+Phase 1              |                      Study PIC16F72 architecture, registers, memory organization and instruction set<br>
+Phase 2              |                      Design the simulator architecture and data structures<br>
 
 
 <b>TEAM MEMBERS AND RESPONSIBILITY<b> <br>
