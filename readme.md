@@ -29,7 +29,11 @@ Stack Mechanism =The stack temporarily stores return addresses when the program 
 * RETURN – Used to come back from the subroutine to the main program.
 * RETLW – Returns from a subroutine and also loads a value into the W register.
 * RETFIE – Used to return from an interrupt routine.
-
+4.Peripheral Simulation
+  *GPIO/PORT Operations = It is used for the PIC16F72 to interact with external devices by receiving inputs and giving outputs. In the simulator, we need to represent how the PIC’s PORTs work during program execution.
+  *Timer0 = It is used to keep track of timing and counting in the PIC16F72. In our simulator, we need to represent its counting process and how it behaves when the timer reaches its limit.
+  
+  
 5.GRAPHICAL USER INTERFACE:
 Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory 
                changes during execution.
