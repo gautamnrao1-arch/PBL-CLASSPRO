@@ -31,8 +31,7 @@ Stack Mechanism =The stack temporarily stores return addresses when the program 
 * RETFIE – Used to return from an interrupt routine.
 
 5.GRAPHICAL USER INTERFACE:
-
- Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory 
+Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory 
                changes during execution.
 Register Visualization = The simulator can display important register values and show how they change when instructions are executed.
                   
@@ -44,4 +43,9 @@ Java language is been preferred for this project.
 
 INITIAL SYSTEM DESIGN/ARCHITECTURE
 INITIAL DEVELOPMENT PLAN
-TEAM MEMBERS AND RESPONSIBILITY 
+
+TEAM MEMBERS AND RESPONSIBILITY :
+Gautam(team Leader): CPU/Register organization + instruction category
+Reeva : Memory organization + stack mechanism
+Yuktha: GPIO + timer
+Sanvi: status/flag info + interrupt mechanism
