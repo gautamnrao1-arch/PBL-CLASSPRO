@@ -45,13 +45,14 @@ It helps the processor know where to come back after the subroutine finishes.<br
 
 GPIO/PORT Operations = It is used for the PIC16F72 to interact with external devices by receiving inputs and giving outputs.<br> In the simulator, we need to represent how the PIC’s PORTs work during program execution.<br>
 Timer0 = It is used to keep track of timing and counting in the PIC16F72. In our simulator, we need to represent its counting process and how it behaves when the timer reaches its limit.<br>
-  
+Interrupt Mechanism = It allow the PIC to respond to an event that needs immediate attention while the program is running. The simulator should represent how the processor handles such events. 
   
 5.GRAPHICAL USER INTERFACE<br>
 
 Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory <br>changes during execution.<br>
 Register Visualization = The simulator can display important register values and show how they change when instructions are executed.<br>
-
+GPIO/PORT Status = It should provide a simple way to see the current state of the PIC16F72's GPIO/PORTs while the program is running. This helps the user understand how the input and output values are changing.
+Timer and Interrupt Status = It should show the current state of Timer0 and indicate important timer events. It should also make the interrupt status visible when an interrupt occurs.
 <b>SELECTED PROGRAMMING LANGUAGE<b> <br>
 
 Java<br>
