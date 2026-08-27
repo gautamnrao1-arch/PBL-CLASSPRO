@@ -29,6 +29,12 @@ Stack Mechanism =The stack temporarily stores return addresses when the program 
 * RETURN – Used to come back from the subroutine to the main program.
 * RETLW – Returns from a subroutine and also loads a value into the W register.
 * RETFIE – Used to return from an interrupt routine.
+
+5.GRAPHICAL USER INTERFACE:
+
+ Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory 
+               changes during execution.
+Register Visualization = The simulator can display important register values and show how they change when instructions are executed.
                   
 
 
