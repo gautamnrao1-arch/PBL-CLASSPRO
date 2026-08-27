@@ -12,7 +12,20 @@ PROJECT OBJECTIVE
 3. Have to visualize CPU, register, memory(stack), GPIO, timer and interrupts.
 4. To have a user friendly interface to test and learn [ very imp ] 
 
-PROBLEM SCOPE
+PROBLEM SCOPE:
+2.MEMORY SIMULATION:
+ Program Memory =This is where the instructions or program of the PIC16F72 are stored. The Program Counter helps the CPU know 
+                    which instruction to execute next.
+                    
+Data Memory or RAM = Used to store data while the program is running. It contains different registers and memory locations used by the CPU.
+
+SFR (Special Function Registers) = These are special registers used to control and monitor different parts of the microcontroller, like CPU 
+              status, ports, timers, etc.
+              
+Stack Mechanism =The stack temporarily stores return addresses when the program calls another function or subroutine.
+                  It helps the processor know where to come back after the subroutine finishes.
+                  
+
 
 SELECTED PROGRAMMING LANGUAGE
 Java
