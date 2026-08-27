@@ -51,7 +51,7 @@ Interrupt Mechanism = It allow the PIC to respond to an event that needs immedia
 
 Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory <br>changes during execution.<br>
 Register Visualization = The simulator can display important register values and show how they change when instructions are executed.<br>
-GPIO/PORT Status = It should provide a simple way to see the current state of the PIC16F72's GPIO/PORTs while the program is running. This helps the user understand how the input and output values are changing.
+GPIO/PORT Status = It should provide a simple way to see the current state of the PIC16F72's GPIO/PORTs while the program is running. This helps the user understand how the input and output values are changing.<br>
 Timer and Interrupt Status = It should show the current state of Timer0 and indicate important timer events. It should also make the interrupt status visible when an interrupt occurs.
 <b>SELECTED PROGRAMMING LANGUAGE<b> <br>
 
