@@ -55,6 +55,16 @@ GPIO/PORT Status = It should provide a simple way to see the current state of th
 Timer and Interrupt Status = It should show the current state of Timer0 and indicate important timer events. It should also make the interrupt status visible when an interrupt occurs.
 <b>SELECTED PROGRAMMING LANGUAGE<b> <br>
 
+3. Status/Flag Information<br>
+
+STATUS Register The STATUS register provides information about the current condition and results of operations in the PIC16F72.<br>s
+Carry Flag (C) It indicates whether a carry occurs during an arithmetic operation.<br>
+Digit Carry Flag (DC) It indicates a carry from the lower 4 bits during an arithmetic operation.<br>
+Zero Flag (Z) It is set when the result of an operation is zero.<br>
+Time-out Flag (TO) It indicates a Watchdog Timer time-out condition.<br>
+Power-down Flag (PD) It indicates the power-down or Sleep condition of the processor.<br>
+Bank Select Bits (RP0/RP1) These bits are used to select the required memory bank.<br>
+
 Java<br>
 Java language is been preferred for this project.<br>
 
@@ -92,15 +102,7 @@ Java language is been preferred for this project.<br>
                                           -------------------------------- 
 
 
-3. Status/Flag Information<br>
 
-STATUS Register The STATUS register provides information about the current condition and results of operations in the PIC16F72.<br>s
-Carry Flag (C) It indicates whether a carry occurs during an arithmetic operation.<br>
-Digit Carry Flag (DC) It indicates a carry from the lower 4 bits during an arithmetic operation.<br>
-Zero Flag (Z) It is set when the result of an operation is zero.<br>
-Time-out Flag (TO) It indicates a Watchdog Timer time-out condition.<br>
-Power-down Flag (PD) It indicates the power-down or Sleep condition of the processor.<br>
-Bank Select Bits (RP0/RP1) These bits are used to select the required memory bank.<br>
 
 
 4. Interrupt Mechanism<br>
