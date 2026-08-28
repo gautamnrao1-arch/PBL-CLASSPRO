@@ -65,6 +65,19 @@ Time-out Flag (TO) It indicates a Watchdog Timer time-out condition.<br>
 Power-down Flag (PD) It indicates the power-down or Sleep condition of the processor.<br>
 Bank Select Bits (RP0/RP1) These bits are used to select the required memory bank.<br>
 
+
+4. Interrupt Mechanism<br>
+
+Interrupt An interrupt allows the PIC16F72 to respond to an important event while the main program is running.<br>
+
+Interrupt Flag It indicates that an interrupt event has occurred.<br>
+Interrupt Enable It allows a particular interrupt source to generate an interrupt.<br>
+Global Interrupt Enable It enables or disables the interrupt system of the processor.<br>
+Interrupt Service Routine (ISR) It is the routine executed by the processor when an interrupt occurs.<br>
+Interrupt Handling The processor handles the interrupt and then returns to the main program.<br>
+Simulator Requirement The simulator should show the status flags and interrupt events during program execution.<br>                                          
+
+
 Java<br>
 Java language is been preferred for this project.<br>
 
@@ -104,17 +117,6 @@ Java language is been preferred for this project.<br>
 
 
 
-
-4. Interrupt Mechanism<br>
-
-Interrupt An interrupt allows the PIC16F72 to respond to an important event while the main program is running.<br>
-
-Interrupt Flag It indicates that an interrupt event has occurred.<br>
-Interrupt Enable It allows a particular interrupt source to generate an interrupt.<br>
-Global Interrupt Enable It enables or disables the interrupt system of the processor.<br>
-Interrupt Service Routine (ISR) It is the routine executed by the processor when an interrupt occurs.<br>
-Interrupt Handling The processor handles the interrupt and then returns to the main program.<br>
-Simulator Requirement The simulator should show the status flags and interrupt events during program execution.<br>                                          
 
 <b>INITIAL DEVELOPMENT PLAN<b><br>
 
