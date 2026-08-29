@@ -77,6 +77,7 @@ Interrupt Service Routine (ISR) It is the routine executed by the processor when
 Interrupt Handling The processor handles the interrupt and then returns to the main program.<br>
 Simulator Requirement The simulator should show the status flags and interrupt events during program execution.<br>                                          
 
+<b>SELECTED PROGRAMMIGN LANGUAGE<b><br>
 
 Java<br>
 Java language is been preferred for this project.<br>
