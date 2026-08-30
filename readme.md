@@ -1,4 +1,4 @@
-<b>PIC16F72 Virtual Simulator</b> <br>
+<b><h1>PIC16F72 Virtual Simulator</h1></b> <br>
 
 <b>PROJECT TITLE</b> <br>
 
@@ -41,21 +41,20 @@ It helps the processor know where to come back after the subroutine finishes.<br
 * RETLW – Returns from a subroutine and also loads a value into the W register.<br>
 * RETFIE – Used to return from an interrupt routine.<br>
 
-4.Peripheral Simulation<br>
+3.Peripheral Simulation<br>
 
 GPIO/PORT Operations = It is used for the PIC16F72 to interact with external devices by receiving inputs and giving outputs.<br> In the simulator, we need to represent how the PIC’s PORTs work during program execution.<br>
 Timer0 = It is used to keep track of timing and counting in the PIC16F72. In our simulator, we need to represent its counting process and how it behaves when the timer reaches its limit.<br>
 Interrupt Mechanism = It allow the PIC to respond to an event that needs immediate attention while the program is running. The simulator should represent how the processor handles such events. 
   
-5.GRAPHICAL USER INTERFACE<br>
+4.GRAPHICAL USER INTERFACE<br>
 
 Memory Visualization = In our simulator  we can show the memory addresses and their values so the user can see how memory <br>changes during execution.<br>
 Register Visualization = The simulator can display important register values and show how they change when instructions are executed.<br>
 GPIO/PORT Status = It should provide a simple way to see the current state of the PIC16F72's GPIO/PORTs while the program is running. This helps the user understand how the input and output values are changing.<br>
-Timer and Interrupt Status = It should show the current state of Timer0 and indicate important timer events. It should also make the interrupt status visible when an interrupt occurs.
-<b>SELECTED PROGRAMMING LANGUAGE<b> <br>
+Timer and Interrupt Status = It should show the current state of Timer0 and indicate important timer events. It should also make the interrupt status visible when an interrupt occurs.<br>
 
-3. Status/Flag Information<br>
+5.Status/Flag Information<br>
 
 STATUS Register The STATUS register provides information about the current condition and results of operations in the PIC16F72.<br>s
 Carry Flag (C) It indicates whether a carry occurs during an arithmetic operation.<br>
@@ -65,8 +64,7 @@ Time-out Flag (TO) It indicates a Watchdog Timer time-out condition.<br>
 Power-down Flag (PD) It indicates the power-down or Sleep condition of the processor.<br>
 Bank Select Bits (RP0/RP1) These bits are used to select the required memory bank.<br>
 
-
-4. Interrupt Mechanism<br>
+6.Interrupt Mechanism<br>
 
 Interrupt An interrupt allows the PIC16F72 to respond to an important event while the main program is running.<br>
 
@@ -121,10 +119,10 @@ Java language is been preferred for this project.<br>
 
 <b>INITIAL DEVELOPMENT PLAN<b><br>
 
-Phase                |                                     Work<br>
+Phase                | Work<br>
                      |
-Phase 1              |                      Study PIC16F72 architecture, registers, memory organization and instruction set<br>
-Phase 2              |                      Design the simulator architecture and data structures<br>
+Phase 1              | Study PIC16F72 architecture, registers, memory organization and instruction set<br>
+Phase 2              | Design the simulator architecture and data structures<br>
 
 
 <b>TEAM MEMBERS AND RESPONSIBILITY<b> <br>
@@ -133,3 +131,5 @@ Gautam(team Leader): CPU/Register organization + instruction category<br>
 Reeva : Memory organization + stack mechanism<br>
 Yuktha: GPIO + timer<br>
 Sanvi: status/flag info + interrupt mechanism<br>
+
+
