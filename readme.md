@@ -10,10 +10,10 @@ We have to understand the internal working of microcontroller PIC16F72. Because 
 
 <b>PROJECT OBJECTIVE<b><br>
 
-1. Simulate virtually the working of PIC16F72 on laptop.<br>
-2. Have to execute assembly instructions.<br>
-3. Have to visualize CPU, register, memory(stack), GPIO, timer and interrupts.<br>
-4. To have a user friendly interface to test and learn [ very imp ] <br>
+1.Simulate virtually the working of PIC16F72 on laptop.<br>
+2.Have to execute assembly instructions.<br>
+3.Have to visualize CPU, register, memory(stack), GPIO, timer and interrupts.<br>
+4.To have a user friendly interface to test and learn [ very imp ] <br>
 
 <b>PROBLEM SCOPE<b><br>
 
@@ -35,7 +35,7 @@ status, ports, timers, etc.<br>
 Stack Mechanism =The stack temporarily stores return addresses when the program calls another function or subroutine.<br>
 It helps the processor know where to come back after the subroutine finishes.<br>
 
-* Stack Pointer or  Stack Control = PIC16F72 does not have a normal user-accessible Stack Pointer register.  It uses a hardware stack to manage return addresses.<br>
+* Stack Pointer or Stack Control - PIC16F72 does not have a normal user-accessible Stack Pointer register. It uses a hardware stack to manage return addresses.<br>
 * CALL – Used to go to a subroutine. The return address is saved in the stack.<br>
 * RETURN – Used to come back from the subroutine to the main program.<br>
 * RETLW – Returns from a subroutine and also loads a value into the W register.<br>
@@ -131,5 +131,3 @@ Gautam(team Leader): CPU/Register organization + instruction category<br>
 Reeva : Memory organization + stack mechanism<br>
 Yuktha: GPIO + timer<br>
 Sanvi: status/flag info + interrupt mechanism<br>
-
-
