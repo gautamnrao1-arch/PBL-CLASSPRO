@@ -1,0 +1,40 @@
+Meeting Minutes
+
+Date: 25 August 2026
+Meeting Number: 1
+Participants: Gautam,Reeva,Yuktha,Sanvi
+
+Agenda
+
+1. Start the Week 1 research on the assigned microcontroller (PIC16F72).
+2. Divide the 10 study topics among the team members:
+   - CPU/Register Organization
+   - Program Counter
+   - Stack Pointer
+   - Status/Flag Information
+   - Memory Organization
+   - Stack Mechanism
+   - Instruction Categories
+   - GPIO
+   - Timer
+   - Interrupt Mechanism
+3. Decide the research method and how the information will be documented.
+
+Discussion
+
+- The team discussed that the research will be done from the basics because the members have limited  experience with the microcontroller.
+- Each member will first understand their topic generally and then study how it is specifically implemented in the STC89C52.
+- The topics were divided among the team members according to the discussion.
+
+Decisions
+
+1. Gautam will take CPU/Register Organization and Instruction category
+2. Reeva will take Stack Mechanism and Memory Organization.
+3. Yuktha  will take GPIO and timer .
+4. Sanvi will take Status/flag info and interrupt mechanism.
+
+Action Items
+Gautam: Research CPU/Register Organization and Instruction Categories of the PIC16F72.
+Reeva: Research Stack Mechanism and Memory Organization of the PIC16F72.
+Yuktha: Research GPIO and Timer of the PIC16F72.
+Sanvi: Research Status/Flag Information and Interrupt Mechanism of the PIC16F72.
