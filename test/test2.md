@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-=======
 #Week 2 Instruction Test Results
 
 | Test | Instruction | Expected Result | Actual Result | Status |
