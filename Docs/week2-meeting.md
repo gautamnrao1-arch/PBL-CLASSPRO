@@ -29,6 +29,9 @@ Participants:Gautam, Reeva, Yuktha, Sanvi
  Action Items
 
 Gautam: Work on Main.java and CPU.java
+
 Reeva: Work on ProgramMemory.java, testing, test results and documentation.
+
 Yuktha: Work on SimulatorUI.java and the user interface.
+
 Sanvi: Work on Instruction.java and InstructionSet.java.
