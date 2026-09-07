@@ -10,5 +10,5 @@
 | TC06 | INCF 20,1 | Register 0x14 = 1 | Register 0x14 = 1 | PASS |
 | TC07 | GOTO 10 | PC = 10 | PC = 10 | PASS |
 | TC08 | SLEEP | Processor enters sleep mode | Processor enters sleep mode | PASS |
->>>>>>> 2be60d2 (Add test2.md)
+
         
