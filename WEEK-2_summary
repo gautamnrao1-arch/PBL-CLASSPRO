@@ -1,0 +1,61 @@
+1. Registers.java
+Stores the CPU registers and their values. It helps the CPU quickly access and update important data.
+
+2. Memory.java
+Represents the memory used by the PIC16F72 simulator. 
+It stores program instructions and data values.
+
+3. Instruction.java
+Represents one instruction, such as MOVLW, ADDWF, or BCF. It stores the instruction name, operands, and original instruction text.
+
+4. ExecutionResult.java
+Stores the result after an instruction is executed. It can contain information such as the result value, status changes, or execution details.
+
+5. InstructionSet.java
+Contains the instructions supported by the simulator.
+It helps the CPU identify and execute the correct operation.
+
+6. CPU.java
+Acts as the main processor of the simulator. It performs Fetch → Decode → Execute and updates registers, memory, and flags.
+
+7. SimulatorUI.java
+Provides the graphical interface for interacting with the simulator. It contains buttons like Load, Reset, Step, and Run.
+
+8. Main.java
+This is the starting point of the Java program. 
+It launches the simulator and starts the user interface or CLI.
+
+9. Compile
+All Java files are compiled to check for errors and convert the code into executable bytecode. 
+If compilation succeeds, we can run the simulator.
+
+10. Test CLI/Core
+First, we test the CPU and simulator logic through the command line.
+This makes sure the core functionality works before using the GUI.
+
+11. Open GUI
+After the core is working correctly, we open the graphical simulator interface. The GUI allows us to control and observe the CPU easily.
+
+12. LOAD
+The LOAD button loads the program instructions into the simulator's memory. The program is then ready to be executed.
+
+13. RESET
+RESET brings the CPU back to its initial state. Registers, program counter, and other required values are reset.
+
+14. STEP
+STEP executes only one instruction at a time.
+This helps us observe exactly what happens during each CPU cycle.
+
+15. STEP
+Pressing STEP again executes the next instruction. 
+We can check how the registers, memory, PC, and flags change.
+
+16. RUN
+RUN continuously executes the loaded instructions. The simulator continues until the program finishes or reaches a stopping condition.
+
+17. SLEEP TERMINATED
+This indicates that the CPU's sleep state has ended or execution has been stopped. 
+The simulator can then continue or display the final CPU state.
+
+Therefore, this architecture shows how all the components work together to simulate the PIC16F72 CPU,
+from loading and executing instructions to updating registers, memory, and status flags.
