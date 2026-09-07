@@ -40,10 +40,8 @@ public class Registers {
         reset();
     }
 
-    /**
-     * Return the value stored at the specified register address.
-     *
-     */
+    // Return the value stored at the specified register address.
+     
     public int getRegister(int address) {
         if (address >= 0 && address < registers.length) {
             return registers[address] & 0xFF;
@@ -181,9 +179,7 @@ public class Registers {
         }
     }
 
-    /**
-     * Return a readable String representing the important register state.
-     */
+    // Return a readable String representing the important register state.
     public String getRegisterState() {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("PC: 0x%04X (%d)%n", pc, pc));
@@ -195,9 +191,7 @@ public class Registers {
         return sb.toString();
     }
 
-    /**
-     * Return the current flag values
-     */
+    //Return the current flag values
     public String getFlagState() {
         return String.format("Z=%d, C=%d, DC=%d", getZeroFlag(), getCarryFlag(), getDigitCarryFlag());
     }
