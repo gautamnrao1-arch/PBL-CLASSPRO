@@ -3,9 +3,7 @@ import java.util.Arrays;
 
 /**
  * Memory.java
- *
  * This class represents the simulated program and data memory for the PIC16F72 simulator.
-
  */
 public class Memory {
 
@@ -49,9 +47,8 @@ public class Memory {
         return null;
     }
 
-    /**
-     * Read an 8-bit value from simulated data memory at the specified address.
-     */
+    // Read an 8-bit value from simulated data memory at the specified address.
+     
     public int read(int address) {
         if (address >= 0 && address < this.dataMemory.length) {
             return this.dataMemory[address] & 0xFF;
@@ -59,18 +56,17 @@ public class Memory {
         return 0;
     }
 
-    /**
-     * Write an 8-bit value into simulated data memory at the specified address.
-     */
+    
+     // Write an 8-bit value into simulated data memory at the specified address.
+     
     public void write(int address, int value) {
         if (address >= 0 && address < this.dataMemory.length) {
             this.dataMemory[address] = value & 0xFF;
         }
     }
 
-    /**
-     * Clear and reset both program memory and data memory.
-     */
+     //Clear and reset both program memory and data memory.
+     
     public void reset() {
         this.programMemory.clear();
         Arrays.fill(this.dataMemory, 0);
@@ -100,9 +96,8 @@ public class Memory {
         return sb.toString().trim();
     }
 
-    /**
-     * Return the currently loaded program instruction list
-     */
+    // Return the currently loaded program instruction list
+     
     public ArrayList<Instruction> getProgram() {
         return this.programMemory;
     }
