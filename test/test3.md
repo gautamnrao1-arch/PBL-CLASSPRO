@@ -9,4 +9,4 @@
 | TC05 | Queue Dequeue | First inserted data is removed first | First inserted data removed first | PASS |
 | TC06 | Queue FIFO | Elements follow FIFO order | FIFO order maintained | PASS |
 | TC07 | Queue Empty/Full | Queue status is detected correctly | Status detected correctly | PASS |
-| TC08 | Assembly Validation | Queue operations execute correctly | Queue operations executed correctly | PASS |s
+| TC08 | Assembly Validation | Queue operations execute correctly | Queue operations executed correctly | PASS |
