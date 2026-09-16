@@ -1,8 +1,7 @@
 Meeting Minutes
 
 Date: 8 September 2026  
-Meeting Number: 3  
-Place: library  
+Meeting Number: 3   
 Participants: Gautam, Reeva, Yuktha, Sanvi
 
 Agenda
