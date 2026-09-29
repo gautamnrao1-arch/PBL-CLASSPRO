@@ -8,7 +8,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.classfile.Instruction;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -26,6 +25,14 @@ import javax.swing.border.TitledBorder;
  * Graphical User Interface for the PIC16F72 microcontroller simulator.
  * Built using pure Java Swing with an academic, clean, and functional design.
  *
+ * Week 2 & Week 3 Integration:
+ * - Controls: LOAD, RESET, STEP, RUN
+ * - CPU State: PC, Current Instruction, W, STATUS, Z, C, DC, SP
+ * - MEMORY: Address -> Value
+ * - STACK: SP, Stack Status, Stack Contents
+ * - FIFO QUEUE: Queue Status, Queue Size, Queue Contents, Front, Rear
+ * - EXECUTION TRACE: Pipeline execution trace and state changes
+ *
  * Communicates strictly with the central CPU controller.
  */
 public class SimulatorUI extends JFrame {
@@ -40,7 +47,7 @@ public class SimulatorUI extends JFrame {
     private JButton stepButton;
     private JButton runButton;
 
-    // CPU state and trace components
+    // CPU state components
     private JLabel statusLabel;
     private JLabel pcLabel;
     private JLabel currentInstructionLabel;
@@ -49,8 +56,12 @@ public class SimulatorUI extends JFrame {
     private JLabel zeroFlagLabel;
     private JLabel carryFlagLabel;
     private JLabel digitCarryFlagLabel;
+    private JLabel spLabel;
 
-    private JTextArea registersDisplayArea;
+    // Memory, Stack, Queue, and Trace display components
+    private JTextArea memoryDisplayArea;
+    private JTextArea stackDisplayArea;
+    private JTextArea queueDisplayArea;
     private JTextArea traceTextArea;
 
     // Fonts for code and labels
@@ -67,8 +78,8 @@ public class SimulatorUI extends JFrame {
 
         setTitle("PIC16F72 Microcontroller Simulator");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(1060, 720));
-        setMinimumSize(new Dimension(850, 600));
+        setPreferredSize(new Dimension(1120, 800));
+        setMinimumSize(new Dimension(900, 650));
 
         initComponents();
         setupListeners();
@@ -87,17 +98,17 @@ public class SimulatorUI extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout(8, 8));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        // Header 
+        // Header
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel titleLabel = new JLabel("PIC16F72 SIMULATOR - Week 2 Architecture Prototype");
-        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        JLabel titleLabel = new JLabel("PIC16F72 SIMULATOR");
+        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
         headerPanel.add(titleLabel);
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        // // Split left and right panels
+        // Split left and right panels
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createLeftPanel(), createRightPanel());
-        splitPane.setDividerLocation(420);
-        splitPane.setResizeWeight(0.4);
+        splitPane.setDividerLocation(430);
+        splitPane.setResizeWeight(0.38);
         mainPanel.add(splitPane, BorderLayout.CENTER);
 
         setContentPane(mainPanel);
@@ -117,15 +128,19 @@ public class SimulatorUI extends JFrame {
         programInputArea = new JTextArea();
         programInputArea.setFont(MONO_FONT);
         programInputArea.setText(
-            "; Sample PIC16F72 Assembly Program\n" +
-            "MOVLW 5\n" +
+            "; Sample PIC16F72 Program with Week 3 Operations\n" +
+            "MOVLW 10\n" +
             "MOVWF 20\n" +
-            "INCF 20\n" +
-            "ADDWF 20\n" +
+            "PUSH 10\n" +
+            "PUSH 20\n" +
+            "POP W\n" +
+            "ENQUEUE 30\n" +
+            "ENQUEUE 40\n" +
+            "DEQUEUE 21\n" +
             "SLEEP\n"
         );
         JScrollPane inputScroll = new JScrollPane(programInputArea);
-        inputScroll.setPreferredSize(new Dimension(380, 200));
+        inputScroll.setPreferredSize(new Dimension(390, 220));
         inputPanel.add(inputScroll, BorderLayout.CENTER);
 
         // 2. Control Buttons Panel
@@ -165,15 +180,15 @@ public class SimulatorUI extends JFrame {
     }
 
     /**
-     * Creates the right panel displaying CPU state, flags, register view, and execution trace.
+     * Creates the right panel displaying CPU state, Memory, Stack, Queue, and Execution Trace.
      */
     private JPanel createRightPanel() {
         JPanel rightPanel = new JPanel(new BorderLayout(6, 6));
 
-        // // CPU state and status section
+        // CPU state and status top section
         JPanel topContainer = new JPanel(new BorderLayout(6, 6));
 
-        // Execution Status 
+        // Execution Status
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
         statusPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Execution Status", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
@@ -183,17 +198,17 @@ public class SimulatorUI extends JFrame {
         statusPanel.add(statusLabel);
         topContainer.add(statusPanel, BorderLayout.NORTH);
 
-        // // CPU state and flags
+        // CPU State & Flags
         JPanel statePanel = new JPanel(new GridBagLayout());
         statePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "CPU State & Flags", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3, 8, 3, 8);
+        gbc.insets = new Insets(2, 8, 2, 8);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // // PC and current instruction
+        // Row 0: PC and Current Instruction
         gbc.gridx = 0; gbc.gridy = 0;
         statePanel.add(new JLabel("PC:"), gbc);
         gbc.gridx = 1;
@@ -223,7 +238,7 @@ public class SimulatorUI extends JFrame {
         statusRegisterLabel.setFont(MONO_FONT);
         statePanel.add(statusRegisterLabel, gbc);
 
-        // Row 2: Individual Flags
+        // Row 2: Flags (Z, C)
         gbc.gridx = 0; gbc.gridy = 2;
         statePanel.add(new JLabel("Zero (Z):"), gbc);
         gbc.gridx = 1;
@@ -238,7 +253,7 @@ public class SimulatorUI extends JFrame {
         carryFlagLabel.setFont(MONO_FONT);
         statePanel.add(carryFlagLabel, gbc);
 
-        // Row 3: Digit Carry Flag
+        // Row 3: Flags (DC) and Stack Pointer (SP)
         gbc.gridx = 0; gbc.gridy = 3;
         statePanel.add(new JLabel("Digit Carry (DC):"), gbc);
         gbc.gridx = 1;
@@ -246,27 +261,56 @@ public class SimulatorUI extends JFrame {
         digitCarryFlagLabel.setFont(MONO_FONT);
         statePanel.add(digitCarryFlagLabel, gbc);
 
+        gbc.gridx = 2;
+        statePanel.add(new JLabel("Stack Pointer (SP):"), gbc);
+        gbc.gridx = 3;
+        spLabel = new JLabel("0");
+        spLabel.setFont(MONO_FONT);
+        statePanel.add(spLabel, gbc);
+
         topContainer.add(statePanel, BorderLayout.CENTER);
         rightPanel.add(topContainer, BorderLayout.NORTH);
 
-        //// Registers and execution trace
-        JPanel centerContainer = new JPanel(new GridLayout(2, 1, 6, 6));
+        // Center Container: Memory, Stack, Queue, and Execution Trace
+        JPanel centerContainer = new JPanel(new GridLayout(4, 1, 4, 4));
 
-        // File Registers & Data Memory Display
-        JPanel regPanel = new JPanel(new BorderLayout());
-        regPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "File Registers / Data Memory", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
-        registersDisplayArea = new JTextArea();
-        registersDisplayArea.setFont(MONO_FONT);
-        registersDisplayArea.setEditable(false);
-        JScrollPane regScroll = new JScrollPane(registersDisplayArea);
-        regPanel.add(regScroll, BorderLayout.CENTER);
-        centerContainer.add(regPanel);
+        // 1. Memory Panel (Address -> Value)
+        JPanel memoryPanel = new JPanel(new BorderLayout());
+        memoryPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "MEMORY (Data RAM)", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
+        memoryDisplayArea = new JTextArea();
+        memoryDisplayArea.setFont(MONO_FONT);
+        memoryDisplayArea.setEditable(false);
+        JScrollPane memoryScroll = new JScrollPane(memoryDisplayArea);
+        memoryPanel.add(memoryScroll, BorderLayout.CENTER);
+        centerContainer.add(memoryPanel);
 
-        // Execution Trace Display
+        // 2. Stack Panel (SP, Status, Contents)
+        JPanel stackPanel = new JPanel(new BorderLayout());
+        stackPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "STACK (PICStack - 8 Levels)", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
+        stackDisplayArea = new JTextArea();
+        stackDisplayArea.setFont(MONO_FONT);
+        stackDisplayArea.setEditable(false);
+        JScrollPane stackScroll = new JScrollPane(stackDisplayArea);
+        stackPanel.add(stackScroll, BorderLayout.CENTER);
+        centerContainer.add(stackPanel);
+
+        // 3. FIFO Queue Panel (Status, Size, Front, Rear, Contents)
+        JPanel queuePanel = new JPanel(new BorderLayout());
+        queuePanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "FIFO QUEUE", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
+        queueDisplayArea = new JTextArea();
+        queueDisplayArea.setFont(MONO_FONT);
+        queueDisplayArea.setEditable(false);
+        JScrollPane queueScroll = new JScrollPane(queueDisplayArea);
+        queuePanel.add(queueScroll, BorderLayout.CENTER);
+        centerContainer.add(queuePanel);
+
+        // 4. Execution Trace Panel
         JPanel tracePanel = new JPanel(new BorderLayout());
         tracePanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Execution Trace", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
+                BorderFactory.createEtchedBorder(), "EXECUTION TRACE", TitledBorder.LEFT, TitledBorder.TOP, BOLD_FONT));
         traceTextArea = new JTextArea();
         traceTextArea.setFont(MONO_FONT);
         traceTextArea.setEditable(false);
@@ -324,7 +368,6 @@ public class SimulatorUI extends JFrame {
             return;
         }
 
-        // // Load program into CPU
         cpu.loadProgram(program);
         updateUIState("PROGRAM LOADED", String.format("Successfully loaded %d instruction(s) into memory.", program.size()));
     }
@@ -334,7 +377,7 @@ public class SimulatorUI extends JFrame {
      */
     private void handleReset() {
         cpu.reset();
-        updateUIState("READY", "Simulator reset: registers and memory cleared.");
+        updateUIState("READY", "Simulator reset: registers, memory, stack, and queue cleared.");
     }
 
     /**
@@ -371,12 +414,19 @@ public class SimulatorUI extends JFrame {
         summary.append(String.format("Final PC: 0x%04X (%d)%n", cpu.getRegisters().getPC(), cpu.getRegisters().getPC()));
         summary.append(String.format("Final W:  0x%02X (%d)%n", cpu.getW(), cpu.getW()));
         summary.append(String.format("Final STATUS: 0x%02X [%s]%n", cpu.getRegisters().getStatus(), cpu.getRegisters().getFlagState()));
+        summary.append(String.format("Final SP: %d%n", cpu.getRegisters().getSP()));
+        if (cpu.getStack() != null) {
+            summary.append(String.format("Stack: %s (SP=%d)%n", cpu.getStack().getStatus(), cpu.getStack().getStackPointer()));
+        }
+        if (cpu.getQueue() != null) {
+            summary.append(String.format("Queue: %s (Size=%d)%n", cpu.getQueue().getStatus(), cpu.getQueue().getSize()));
+        }
 
         updateUIState(status, summary.toString());
     }
 
     /**
-     * Refreshes all visual components with the latest CPU and Memory state.
+     * Refreshes all visual components with the latest CPU, Registers, Memory, Stack, and Queue state.
      *
      * @param status The current execution status string
      * @param traceText Text to display in the execution trace box
@@ -397,8 +447,9 @@ public class SimulatorUI extends JFrame {
         zeroFlagLabel.setText(String.valueOf(reg.getZeroFlag()));
         carryFlagLabel.setText(String.valueOf(reg.getCarryFlag()));
         digitCarryFlagLabel.setText(String.valueOf(reg.getDigitCarryFlag()));
+        spLabel.setText(String.valueOf(reg.getSP()));
 
-        // // Show loaded program and current position
+        // Show loaded program and current position
         ArrayList<Instruction> program = cpu.getMemory().getProgram();
         StringBuilder progText = new StringBuilder();
         for (int i = 0; i < program.size(); i++) {
@@ -411,44 +462,82 @@ public class SimulatorUI extends JFrame {
         }
         loadedProgramArea.setText(progText.toString());
 
-        // Display File Registers & Data Memory
-        StringBuilder regText = new StringBuilder();
-        regText.append("Special Function Registers:").append(System.lineSeparator());
-        regText.append(String.format("  INDF  (0x00): 0x%02X | TMR0 (0x01): 0x%02X%n", reg.getRegister(0x00), reg.getRegister(0x01)));
-        regText.append(String.format("  PCL   (0x02): 0x%02X | FSR  (0x04): 0x%02X%n", reg.getRegister(0x02), reg.getRegister(0x04)));
-        regText.append(String.format("  PORTA (0x05): 0x%02X | PORTB(0x06): 0x%02X%n", reg.getRegister(0x05), reg.getRegister(0x06)));
-        regText.append(System.lineSeparator());
-        regText.append("General Purpose Registers (RAM 0x20 - 0x2F):").append(System.lineSeparator());
-        for (int addr = 0x20; addr <= 0x2F; addr += 4) {
-            regText.append(String.format("  [0x%02X]: %02X  [0x%02X]: %02X  [0x%02X]: %02X  [0x%02X]: %02X%n",
-                    addr, reg.getRegister(addr),
-                    addr + 1, reg.getRegister(addr + 1),
-                    addr + 2, reg.getRegister(addr + 2),
-                    addr + 3, reg.getRegister(addr + 3)));
-        }
-
-        //// Show other active registers
-        boolean hasOther = false;
-        StringBuilder otherRegs = new StringBuilder();
-        for (int addr = 0; addr < Registers.TOTAL_REGISTERS; addr++) {
-            if (addr >= 0x20 && addr <= 0x2F) continue;
-            if (addr <= 0x07) continue; // already shown in SFRs
-            int val = reg.getRegister(addr);
-            if (val != 0) {
-                if (!hasOther) {
-                    otherRegs.append(System.lineSeparator()).append("Other Active Registers:").append(System.lineSeparator());
-                    hasOther = true;
-                }
-                otherRegs.append(String.format("  [0x%02X] = 0x%02X (%d)%n", addr, val, val));
+        // 1. MEMORY: Show relevant memory contents (Address -> Value)
+        StringBuilder memText = new StringBuilder();
+        memText.append("Special Function Registers / Base RAM:").append(System.lineSeparator());
+        for (int addr = 0; addr < 16; addr++) {
+            int val = cpu.getMemory().read(addr);
+            memText.append(String.format("0x%02X -> 0x%02X  ", addr, val));
+            if ((addr + 1) % 4 == 0 && addr < 15) {
+                memText.append(System.lineSeparator());
             }
         }
-        if (hasOther) {
-            regText.append(otherRegs);
+        // Show any non-zero RAM locations from 0x10 to 0xFF
+        boolean extra = false;
+        for (int addr = 16; addr < Memory.DATA_MEMORY_SIZE; addr++) {
+            int val = cpu.getMemory().read(addr);
+            if (val != 0) {
+                if (!extra) {
+                    memText.append(System.lineSeparator()).append("User RAM Locations:").append(System.lineSeparator());
+                    extra = true;
+                }
+                memText.append(String.format("0x%02X -> 0x%02X (%d)  ", addr, val, val));
+            }
         }
+        memoryDisplayArea.setText(memText.toString().trim());
 
-        registersDisplayArea.setText(regText.toString());
+        // 2. STACK: Show Stack Pointer (SP), Stack Status, Stack Contents
+        PICStack stack = cpu.getStack();
+        StringBuilder stackText = new StringBuilder();
+        if (stack != null) {
+            stackText.append(String.format("Stack Pointer (SP): %d / %d | Status: %s%n",
+                    stack.getStackPointer(), stack.getMaxSize(), stack.getStatus()));
+            stackText.append("Contents: ");
+            int[] contents = stack.getStackContents();
+            if (contents.length == 0) {
+                stackText.append("[Empty]");
+            } else {
+                stackText.append("[");
+                for (int i = 0; i < contents.length; i++) {
+                    stackText.append(String.format("0x%04X (%d)", contents[i], contents[i]));
+                    if (i < contents.length - 1) {
+                        stackText.append(", ");
+                    }
+                }
+                stackText.append("]");
+            }
+        } else {
+            stackText.append("(Stack not initialized)");
+        }
+        stackDisplayArea.setText(stackText.toString().trim());
 
-        // Update Trace
+        // 3. QUEUE: Show Queue Status, Queue Size, Queue Contents, Front, Rear
+        FIFOQueue queue = cpu.getQueue();
+        StringBuilder qText = new StringBuilder();
+        if (queue != null) {
+            qText.append(String.format("Status: %s | Size: %d/%d | Front: %d | Rear: %d%n",
+                    queue.getStatus(), queue.getSize(), queue.getMaxSize(),
+                    queue.getFront(), queue.getRear()));
+            qText.append("Contents: ");
+            int[] qContents = queue.getQueueContents();
+            if (qContents.length == 0) {
+                qText.append("[Empty]");
+            } else {
+                qText.append("[");
+                for (int i = 0; i < qContents.length; i++) {
+                    qText.append(String.format("0x%02X (%d)", qContents[i], qContents[i]));
+                    if (i < qContents.length - 1) {
+                        qText.append(", ");
+                    }
+                }
+                qText.append("]");
+            }
+        } else {
+            qText.append("(Queue not initialized)");
+        }
+        queueDisplayArea.setText(qText.toString().trim());
+
+        // 4. EXECUTION TRACE
         if (traceText != null && !traceText.isEmpty()) {
             traceTextArea.setText(traceText);
         }
@@ -457,6 +546,8 @@ public class SimulatorUI extends JFrame {
     /**
      * Parses multiline program text into an ArrayList of Instruction objects.
      * Supports commas or whitespace as operand delimiters and strips comments.
+     * Recognizes Week 2 and Week 3 instructions:
+     * MOVLW, MOVWF, ADDWF, SUBWF, ANDWF, INCF, GOTO, SLEEP, PUSH, POP, ENQUEUE, DEQUEUE.
      *
      * @param text Raw multiline assembly source
      * @return List of constructed Instruction objects
@@ -498,7 +589,7 @@ public class SimulatorUI extends JFrame {
                 continue;
             }
 
-            String opcode = tokens[0].trim();
+            String opcode = tokens[0].trim().toUpperCase();
             String[] operands;
             if (tokens.length > 1) {
                 operands = new String[tokens.length - 1];

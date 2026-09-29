@@ -24,7 +24,10 @@ public class InstructionSet {
 
     // List of supported canonical opcodes
     private static final ArrayList<String> SUPPORTED_OPCODES = new ArrayList<String>(
-        Arrays.asList("MOVLW", "MOVWF", "ADDWF", "SUBWF", "ANDWF", "INCF", "GOTO", "SLEEP")
+        Arrays.asList(
+            "MOVLW", "MOVWF", "ADDWF", "SUBWF", "ANDWF", "INCF", "GOTO", "SLEEP",
+            "PUSH", "POP", "ENQUEUE", "DEQUEUE"
+        )
     );
 
     /**
@@ -73,6 +76,12 @@ public class InstructionSet {
                 return "Control Flow";
             case "SLEEP":
                 return "Program Termination";
+            case "PUSH":
+            case "POP":
+                return "Stack";
+            case "ENQUEUE":
+            case "DEQUEUE":
+                return "FIFO Queue";
             default:
                 return "Unknown";
         }
@@ -104,6 +113,14 @@ public class InstructionSet {
                 return "Change program counter to target address.";
             case "SLEEP":
                 return "Terminate simulator execution.";
+            case "PUSH":
+                return "Push a value onto the simulator stack.";
+            case "POP":
+                return "Pop the top value from the simulator stack.";
+            case "ENQUEUE":
+                return "Insert a value at the rear of the FIFO queue.";
+            case "DEQUEUE":
+                return "Remove and return the value from the front of the FIFO queue.";
             default:
                 return "Unknown instruction.";
         }
@@ -131,10 +148,14 @@ public class InstructionSet {
         String canonical = normalize(opcode);
         switch (canonical) {
             case "SLEEP":
+            case "POP":
+            case "DEQUEUE":
                 return 0;
             case "MOVLW":
             case "MOVWF":
             case "GOTO":
+            case "PUSH":
+            case "ENQUEUE":
                 return 1;
             case "ADDWF":
             case "SUBWF":

@@ -234,6 +234,94 @@ public class ExecutionResult {
     }
 
     /**
+     * Record a successful PUSH operation.
+     *
+     * @param value Value pushed onto the stack
+     * @param sp Updated stack pointer
+     */
+    public void recordPushSuccess(int value, int sp) {
+        this.executeComplete = true;
+        this.success = true;
+        this.resultMessage = String.format("PUSH: value %d pushed onto stack", value);
+        addRegisterChange(String.format("SP = %d", sp));
+    }
+
+    /**
+     * Record a failed PUSH operation when the stack is full.
+     */
+    public void recordPushFull() {
+        this.executeComplete = false;
+        this.success = false;
+        this.errorMessage = "Stack overflow: stack is full.";
+        this.resultMessage = "Stack is FULL";
+    }
+
+    /**
+     * Record a successful POP operation.
+     *
+     * @param value Value removed from the stack
+     * @param sp Updated stack pointer
+     */
+    public void recordPopSuccess(int value, int sp) {
+        this.executeComplete = true;
+        this.success = true;
+        this.resultMessage = String.format("POP: value %d removed from stack", value);
+        addRegisterChange(String.format("SP = %d", sp));
+    }
+
+    /**
+     * Record a failed POP operation when the stack is empty.
+     */
+    public void recordPopEmpty() {
+        this.executeComplete = false;
+        this.success = false;
+        this.errorMessage = "Stack underflow: stack is empty.";
+        this.resultMessage = "Stack is EMPTY";
+    }
+
+    /**
+     * Record a successful ENQUEUE operation.
+     *
+     * @param value Value added to the FIFO queue
+     */
+    public void recordEnqueueSuccess(int value) {
+        this.executeComplete = true;
+        this.success = true;
+        this.resultMessage = String.format("ENQUEUE: value %d added to FIFO queue", value);
+    }
+
+    /**
+     * Record a failed ENQUEUE operation when the queue is full.
+     */
+    public void recordEnqueueFull() {
+        this.executeComplete = false;
+        this.success = false;
+        this.errorMessage = "Queue overflow: FIFO queue is full.";
+        this.resultMessage = "Queue is FULL";
+    }
+
+    /**
+     * Record a successful DEQUEUE operation.
+     *
+     * @param value Value removed from the FIFO queue
+     */
+    public void recordDequeueSuccess(int value) {
+        this.executeComplete = true;
+        this.success = true;
+        this.resultMessage = String.format("DEQUEUE: value %d removed from FIFO queue", value);
+    }
+
+    /**
+     * Record a failed DEQUEUE operation when the queue is empty.
+     */
+    public void recordDequeueEmpty() {
+        this.executeComplete = false;
+        this.success = false;
+        this.errorMessage = "Queue underflow: FIFO queue is empty.";
+        this.resultMessage = "Queue is EMPTY";
+    }
+
+    /**
      * Set whether the simulator should terminate execution after this instruction
      * (e.g. on SLEEP, HALT, or end of program).
      *

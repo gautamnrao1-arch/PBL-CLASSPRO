@@ -31,6 +31,9 @@ public class Registers {
     // 8-bit STATUS register
     private int status;
 
+    // Stack Pointer (SP)
+    private int stackPointer;
+
     /**
      * Creates the register storage and resets the values.
      * Initializes all registers, PC, and flags to their default reset state.
@@ -92,6 +95,34 @@ public class Registers {
     }
 
     /**
+     * Return the current Stack Pointer (SP).
+     */
+    public int getSP() {
+        return this.stackPointer;
+    }
+
+    /**
+     * Set the Stack Pointer (SP).
+     */
+    public void setSP(int sp) {
+        this.stackPointer = sp;
+    }
+
+    /**
+     * Increment the Stack Pointer by one.
+     */
+    public void incrementSP() {
+        this.stackPointer++;
+    }
+
+    /**
+     * Decrement the Stack Pointer by one.
+     */
+    public void decrementSP() {
+        this.stackPointer--;
+    }
+
+    /**
      * Return the STATUS register value.
      */
     public int getStatus() {
@@ -109,13 +140,14 @@ public class Registers {
     }
 
     /**
-     * Reset all registers, PC, and STATUS to their initial simulator state.
-     * Clears all memory to 0 and resets PC to 0x0000.
+     * Reset all registers, PC, STATUS, and SP to their initial simulator state.
+     * Clears all memory to 0, resets PC to 0x0000, and resets SP to 0.
      */
     public void reset() {
         Arrays.fill(registers, 0);
         this.pc = 0;
         this.status = 0;
+        this.stackPointer = 0;
         registers[STATUS_ADDR] = 0;
         registers[STATUS_ADDR_BANK1] = 0;
     }
