@@ -120,7 +120,7 @@ public class CPU {
      * 9. Return ExecutionResult.
      *
      * @return ExecutionResult containing pipeline trace and state changes
-     */
+     *
     public ExecutionResult step() {
         // 1. Save PC before execution
         int pcBefore = this.registers.getPC();
