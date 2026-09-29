@@ -26,6 +26,8 @@ public class CPU {
     // Subsystem references
     private final Registers registers;
     private final Memory memory;
+    private PICStack stack;
+    private FIFOQueue queue;
 
     // CPU internal state
     private int w; // 8-bit Working Register (Accumulator)
@@ -35,10 +37,10 @@ public class CPU {
 
     /**
      * Default constructor.
-     * Initializes the CPU with new Registers and Memory instances.
+     * Initializes the CPU with new Registers, Memory, PICStack, and FIFOQueue instances.
      */
     public CPU() {
-        this(new Registers(), new Memory());
+        this(new Registers(), new Memory(), new PICStack(), new FIFOQueue());
     }
 
     /**
@@ -48,17 +50,37 @@ public class CPU {
      * @param memory Existing Memory subsystem
      */
     public CPU(Registers registers, Memory memory) {
+        this(registers, memory, new PICStack(), new FIFOQueue());
+    }
+
+    /**
+     * Full parameterized constructor including simulator Stack and Queue subsystems.
+     *
+     * @param registers Existing Registers subsystem
+     * @param memory Existing Memory subsystem
+     * @param stack Existing PICStack simulator subsystem
+     * @param queue Existing FIFOQueue simulator subsystem
+     */
+    public CPU(Registers registers, Memory memory, PICStack stack, FIFOQueue queue) {
         this.registers = (registers != null) ? registers : new Registers();
         this.memory = (memory != null) ? memory : new Memory();
+        this.stack = (stack != null) ? stack : new PICStack();
+        this.queue = (queue != null) ? queue : new FIFOQueue();
         reset();
     }
 
     /**
-     * Reset the CPU, registers, memory, and internal execution flags.
+     * Reset the CPU, registers, memory, stack, queue, and internal execution flags.
      */
     public void reset() {
         this.registers.reset();
         this.memory.reset();
+        if (this.stack != null) {
+            this.stack.reset();
+        }
+        if (this.queue != null) {
+            this.queue.reset();
+        }
         this.w = 0;
         this.currentInstruction = null;
         this.terminated = false;
@@ -73,6 +95,12 @@ public class CPU {
     public void loadProgram(ArrayList<Instruction> program) {
         this.memory.loadProgram(program);
         this.registers.reset();
+        if (this.stack != null) {
+            this.stack.reset();
+        }
+        if (this.queue != null) {
+            this.queue.reset();
+        }
         this.w = 0;
         this.currentInstruction = null;
         this.terminated = false;
@@ -92,7 +120,7 @@ public class CPU {
      * 9. Return ExecutionResult.
      *
      * @return ExecutionResult containing pipeline trace and state changes
-     */
+     *
     public ExecutionResult step() {
         // 1. Save PC before execution
         int pcBefore = this.registers.getPC();
@@ -391,6 +419,110 @@ public class CPU {
                     break;
                 }
 
+                case "PUSH": {
+                    // Push value onto simulator stack
+                    int val;
+                    if (instruction.getOperand(0) != null && !instruction.getOperand(0).trim().isEmpty()) {
+                        val = parseValue(instruction.getOperand(0));
+                    } else {
+                        val = this.w;
+                    }
+
+                    if (this.stack.isFull()) {
+                        result.recordPushFull();
+                    } else {
+                        boolean pushed = this.stack.push(val);
+                        if (pushed) {
+                            this.registers.setSP(this.stack.getStackPointer());
+                            result.recordPushSuccess(val, this.stack.getStackPointer());
+                        } else {
+                            result.recordPushFull();
+                        }
+                    }
+                    break;
+                }
+
+                case "POP": {
+                    // Pop value from simulator stack
+                    if (this.stack.isEmpty()) {
+                        result.recordPopEmpty();
+                    } else {
+                        Integer val = this.stack.pop();
+                        this.registers.setSP(this.stack.getStackPointer());
+                        result.recordPopSuccess(val, this.stack.getStackPointer());
+
+                        // Update appropriate destination register
+                        if (instruction.getOperand(0) != null && !instruction.getOperand(0).trim().isEmpty()) {
+                            String destStr = instruction.getOperand(0).trim();
+                            if (destStr.equalsIgnoreCase("W") || destStr.equals("0")) {
+                                this.w = val & 0xFF;
+                                result.addRegisterChange(String.format("W = 0x%02X (%d)", this.w, this.w));
+                            } else {
+                                int f = parseValue(destStr) & 0xFF;
+                                this.registers.setRegister(f, val & 0xFF);
+                                this.memory.write(f, val & 0xFF);
+                                result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, val & 0xFF));
+                                result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, val & 0xFF));
+                            }
+                        } else {
+                            this.w = val & 0xFF;
+                            result.addRegisterChange(String.format("W = 0x%02X (%d)", this.w, this.w));
+                        }
+                    }
+                    break;
+                }
+
+                case "ENQUEUE": {
+                    // Enqueue value into simulator FIFO queue
+                    int val;
+                    if (instruction.getOperand(0) != null && !instruction.getOperand(0).trim().isEmpty()) {
+                        val = parseValue(instruction.getOperand(0));
+                    } else {
+                        val = this.w;
+                    }
+
+                    if (this.queue.isFull()) {
+                        result.recordEnqueueFull();
+                    } else {
+                        boolean enqueued = this.queue.enqueue(val);
+                        if (enqueued) {
+                            result.recordEnqueueSuccess(val);
+                        } else {
+                            result.recordEnqueueFull();
+                        }
+                    }
+                    break;
+                }
+
+                case "DEQUEUE": {
+                    // Dequeue value from simulator FIFO queue
+                    if (this.queue.isEmpty()) {
+                        result.recordDequeueEmpty();
+                    } else {
+                        Integer val = this.queue.dequeue();
+                        result.recordDequeueSuccess(val);
+
+                        // Update destination register
+                        if (instruction.getOperand(0) != null && !instruction.getOperand(0).trim().isEmpty()) {
+                            String destStr = instruction.getOperand(0).trim();
+                            if (destStr.equalsIgnoreCase("W") || destStr.equals("0")) {
+                                this.w = val & 0xFF;
+                                result.addRegisterChange(String.format("W = 0x%02X (%d)", this.w, this.w));
+                            } else {
+                                int f = parseValue(destStr) & 0xFF;
+                                this.registers.setRegister(f, val & 0xFF);
+                                this.memory.write(f, val & 0xFF);
+                                result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, val & 0xFF));
+                                result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, val & 0xFF));
+                            }
+                        } else {
+                            this.w = val & 0xFF;
+                            result.addRegisterChange(String.format("W = 0x%02X (%d)", this.w, this.w));
+                        }
+                    }
+                    break;
+                }
+
                 default: {
                     // Unknown instruction
                     result.setExecuteComplete(false);
@@ -427,6 +559,24 @@ public class CPU {
      */
     public Memory getMemory() {
         return this.memory;
+    }
+
+    /**
+     * Return the PICStack simulator stack subsystem.
+     *
+     * @return PICStack reference
+     */
+    public PICStack getStack() {
+        return this.stack;
+    }
+
+    /**
+     * Return the FIFOQueue simulator queue subsystem.
+     *
+     * @return FIFOQueue reference
+     */
+    public FIFOQueue getQueue() {
+        return this.queue;
     }
 
     /**
