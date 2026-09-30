@@ -3,15 +3,10 @@ import java.util.ArrayList;
 /**
  * CoreProcess.java
  *
- * Week 4 Core Process for the PIC16F72 simulator.
+ * Week 4 Core Process.
  *
- * Responsible for controlling:
- * - CPU execution
- * - Registers
- * - Memory
- *
- * Stack and FIFO Queue will be integrated into the Core
- * as their implementation is added.
+ * Controls:
+ * CPU, Registers, Memory, Stack and FIFO Queue.
  */
 public class CoreProcess {
 
@@ -19,61 +14,95 @@ public class CoreProcess {
     private final Memory memory;
     private final CPU cpu;
 
-    /**
-     * Creates the Core Process and its CPU components.
-     */
+    private final ProcessorStack stack;
+    private final FIFOQueue queue;
+
     public CoreProcess() {
-        this.registers = new Registers();
-        this.memory = new Memory();
-        this.cpu = new CPU(registers, memory);
+
+        registers = new Registers();
+        memory = new Memory();
+        cpu = new CPU(registers, memory);
+
+        stack = new ProcessorStack();
+        queue = new FIFOQueue();
     }
 
-    /**
-     * Loads a program into the CPU.
-     */
     public void loadProgram(ArrayList<Instruction> program) {
         cpu.loadProgram(program);
     }
 
-    /**
-     * Resets the complete CPU state.
-     */
     public void reset() {
         cpu.reset();
+        stack.reset();
+        queue.reset();
     }
 
-    /**
-     * Executes one instruction.
-     */
     public ExecutionResult step() {
         return cpu.step();
     }
 
-    /**
-     * Runs the loaded program until termination or error.
-     */
     public void run() {
         cpu.run();
     }
 
-    /**
-     * Returns the CPU controlled by this Core Process.
-     */
     public CPU getCPU() {
         return cpu;
     }
 
-    /**
-     * Returns the Registers subsystem.
-     */
     public Registers getRegisters() {
         return registers;
     }
 
-    /**
-     * Returns the Memory subsystem.
-     */
     public Memory getMemory() {
         return memory;
+    }
+
+    public ProcessorStack getStack() {
+        return stack;
+    }
+
+    public FIFOQueue getQueue() {
+        return queue;
+    }
+
+    public boolean pushToStack(int value) {
+        return stack.push(value);
+    }
+
+    public int popFromStack() {
+        return stack.pop();
+    }
+
+    public boolean enqueue(int value) {
+        return queue.enqueue(value);
+    }
+
+    public int dequeue() {
+        return queue.dequeue();
+    }
+
+    public String getCoreState() {
+
+        StringBuilder state = new StringBuilder();
+
+        state.append("=== CORE STATE ===\n");
+
+        state.append(registers.getRegisterState())
+             .append("\n\n");
+
+        state.append("W Register: ")
+             .append(String.format("0x%02X", cpu.getW()))
+             .append("\n\n");
+
+        state.append(memory.getMemoryState())
+             .append("\n\n");
+
+        state.append(stack.getState())
+             .append("\n\n");
+
+        state.append(queue.getState())
+             .append("\n");
+
+        return state.toString();
     }
 }
