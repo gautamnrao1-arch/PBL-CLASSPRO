@@ -12,10 +12,18 @@ import java.util.Map;
  * CPU simulator, registers, memory, stack, and FIFO queue.
  *
  * Architectural Responsibilities:
- * - Owns and executes CPU instructions.
- * - Receives simulation commands (LOAD, STEP, RUN, RESET, STATE, SHUTDOWN) from UI over {@link IPCConstants#CHANNEL_UI_CORE}.
- * - Returns execution outcomes and state snapshots to UI.
- * - Forwards operational audit logs to Logger over {@link IPCConstants#CHANNEL_CORE_LOGGER}.
+ * 1. Runs as an independent Java process via main().
+ * 2. Initializes and owns the authoritative CPU, memory, register, stack, queue, and execution state.
+ * 3. Receives IPCMessage commands using the agreed IPCManager interface over CHANNEL_UI_CORE.
+ * 4. Handles EXECUTE, RESET, and SHUTDOWN (as well as LOAD, STATE) according to the shared protocol.
+ * 5. Executes instructions by calling the existing simulator APIs (CPU.step(), CPU.run(), CPU.execute()).
+ * 6. Returns RESULT or ERROR messages to UI with full execution information and state snapshots.
+ * 7. Sends LOG messages to the separate Logger process over CHANNEL_CORE_LOGGER.
+ * 8. Preserves existing simulator instruction semantics without rewriting CPU implementation.
+ * 9. Handles malformed messages, invalid instructions, and IPC failures safely.
+ * 10. Shuts down cleanly when requested.
+ * 11. Does not create or launch extra UI instances.
+ * 12. Does not implement OS-specific pipes inside CoreProcess; uses the shared IPC abstraction.
  */
 public class CoreProcess {
 
@@ -29,6 +37,9 @@ public class CoreProcess {
     private IPCManager uiIPC;
     private volatile boolean running = true;
 
+    /**
+     * Default constructor: initializes the authoritative CPU, registers, memory, stack, and queue.
+     */
     public CoreProcess() {
         this.registers = new Registers();
         this.memory = new Memory();
@@ -37,6 +48,20 @@ public class CoreProcess {
         this.queue = new FIFOQueue();
     }
 
+    /**
+     * Parameterized constructor for dependency injection or testing.
+     */
+    public CoreProcess(Registers registers, Memory memory, CPU cpu, PICStack stack, FIFOQueue queue) {
+        this.registers = (registers != null) ? registers : new Registers();
+        this.memory = (memory != null) ? memory : new Memory();
+        this.cpu = (cpu != null) ? cpu : new CPU(this.registers, this.memory);
+        this.stack = (stack != null) ? stack : new PICStack();
+        this.queue = (queue != null) ? queue : new FIFOQueue();
+    }
+
+    /**
+     * Main entry point when invoked as a standalone process (--role=core).
+     */
     public static void main(String[] args) {
         System.out.println("[CORE] Starting Core Simulator Process...");
         CoreProcess core = new CoreProcess();
@@ -44,8 +69,11 @@ public class CoreProcess {
     }
 
     /**
-     * Executes the Core process lifecycle: connects to Logger, binds UI server,
-     * processes commands in a loop, and cleanly terminates on SHUTDOWN.
+     * Executes the Core process lifecycle:
+     * 1. Connects to the Logger process.
+     * 2. Binds the UI server pipe.
+     * 3. Listens for and processes IPC commands in a loop.
+     * 4. Shuts down cleanly upon receiving SHUTDOWN or EOF.
      */
     public void run() {
         // 1. Connect to Logger process
@@ -87,18 +115,33 @@ public class CoreProcess {
 
         } catch (IOException e) {
             System.err.println("[CORE ERROR] IPC Error: " + e.getMessage());
+            sendLog("CORE ERROR: IPC exception occurred: " + e.getMessage());
         } finally {
             closeAll();
         }
     }
 
     /**
-     * Dispatches an incoming UI request to the corresponding simulator action.
+     * Dispatches an incoming request to the corresponding simulator action and returns the response.
+     * Handles malformed messages, unknown commands, and errors safely without crashing.
+     *
+     * @param request The incoming IPCMessage request
+     * @return Formatted IPCMessage response (RESULT, ACK, or ERROR)
      */
     public IPCMessage handleMessage(IPCMessage request) {
+        if (request == null) {
+            sendLog("ERROR: Received null request message.");
+            return IPCMessage.createError("unknown", "Null request message received.");
+        }
+
         String type = request.getType();
         String reqId = request.getRequestId();
         String payload = request.getPayload();
+
+        if (type == null || type.trim().isEmpty()) {
+            sendLog("ERROR: Message type is null or empty.");
+            return IPCMessage.createError(reqId, "Message type cannot be null or empty.");
+        }
 
         try {
             switch (type) {
@@ -125,22 +168,30 @@ public class CoreProcess {
                 }
 
                 case IPCMessage.TYPE_EXECUTE: {
-                    String cmd = (payload != null) ? payload.trim().toUpperCase() : IPCConstants.CMD_STEP;
-                    if (cmd.startsWith(IPCConstants.CMD_STEP)) {
+                    String cmd = (payload != null) ? payload.trim() : IPCConstants.CMD_STEP;
+                    String upperCmd = cmd.toUpperCase();
+
+                    if (upperCmd.startsWith(IPCConstants.CMD_STEP)) {
+                        // Single step execution via existing CPU API
                         ExecutionResult result = cpu.step();
                         String status;
                         if (!result.isSuccess()) {
                             status = "ERROR: " + result.getErrorMessage();
+                            sendLog("STEP ERROR: " + result.getErrorMessage());
                         } else if (result.isTerminated() || cpu.isTerminated()) {
                             status = "TERMINATED";
+                            sendLog(String.format("STEP: PC=0x%04X, W=0x%02X, Status=%s",
+                                    registers.getPC(), cpu.getW(), status));
                         } else {
                             status = "EXECUTING";
+                            sendLog(String.format("STEP: PC=0x%04X, W=0x%02X, Status=%s",
+                                    registers.getPC(), cpu.getW(), status));
                         }
-                        sendLog(String.format("STEP: PC=0x%04X, W=0x%02X, Status=%s",
-                                registers.getPC(), cpu.getW(), status));
                         String snapshot = serializeStateSnapshot(status, result.getTrace());
                         return IPCMessage.createResult(reqId, snapshot);
-                    } else if (cmd.startsWith(IPCConstants.CMD_RUN)) {
+
+                    } else if (upperCmd.startsWith(IPCConstants.CMD_RUN)) {
+                        // Continuous execution via existing CPU API
                         cpu.run();
                         String status = cpu.isTerminated() ? "TERMINATED" : "READY";
                         StringBuilder summary = new StringBuilder();
@@ -154,8 +205,28 @@ public class CoreProcess {
                                 cpu.isTerminated(), registers.getPC(), cpu.getW()));
                         String snapshot = serializeStateSnapshot(status, summary.toString());
                         return IPCMessage.createResult(reqId, snapshot);
+
                     } else {
-                        return IPCMessage.createError(reqId, "Unknown execution command: " + cmd);
+                        // Direct single instruction execution (e.g., "MOVLW 5" or "INCF 20")
+                        ArrayList<Instruction> directInsts = parseProgram(cmd);
+                        if (!directInsts.isEmpty()) {
+                            Instruction inst = directInsts.get(0);
+                            if (InstructionSet.isValidOpcode(inst.getOpcode())) {
+                                ExecutionResult result = cpu.execute(inst);
+                                String status = result.isSuccess()
+                                        ? (result.isTerminated() ? "TERMINATED" : "EXECUTING")
+                                        : "ERROR: " + result.getErrorMessage();
+                                sendLog(String.format("EXECUTE DIRECT '%s': Status=%s, W=0x%02X, PC=0x%04X",
+                                        inst.getOpcode(), status, cpu.getW(), registers.getPC()));
+                                String snapshot = serializeStateSnapshot(status, result.getTrace());
+                                return IPCMessage.createResult(reqId, snapshot);
+                            }
+                        }
+
+                        // Unknown command or invalid instruction
+                        String errMsg = "Unknown execution command or invalid instruction: " + cmd;
+                        sendLog("EXECUTE ERROR: " + errMsg);
+                        return IPCMessage.createError(reqId, errMsg);
                     }
                 }
 
@@ -175,12 +246,16 @@ public class CoreProcess {
                     return IPCMessage.createAck(reqId, "Core shutting down");
                 }
 
-                default:
-                    return IPCMessage.createError(reqId, "Unsupported message type: " + type);
+                default: {
+                    String errMsg = "Unsupported message type: " + type;
+                    sendLog("ERROR: " + errMsg);
+                    return IPCMessage.createError(reqId, errMsg);
+                }
             }
         } catch (Exception ex) {
-            sendLog("EXCEPTION in Core: " + ex.getMessage());
-            return IPCMessage.createError(reqId, "Core execution error: " + ex.getMessage());
+            String errMsg = "Core execution error: " + ex.getMessage();
+            sendLog("EXCEPTION in Core: " + errMsg);
+            return IPCMessage.createError(reqId, errMsg);
         }
     }
 
@@ -299,7 +374,7 @@ public class CoreProcess {
     /**
      * Sends a log message to the Logger process if connected.
      */
-    private void sendLog(String logMessage) {
+    public void sendLog(String logMessage) {
         System.out.println("[CORE LOG] " + logMessage);
         if (loggerIPC != null && loggerIPC.isConnected()) {
             try {
@@ -308,6 +383,18 @@ public class CoreProcess {
                 System.err.println("[CORE WARNING] Failed to send log to Logger: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Stops the Core process run loop programmatically.
+     */
+    public void stop() {
+        this.running = false;
+        closeAll();
+    }
+
+    public boolean isRunning() {
+        return this.running;
     }
 
     private void closeAll() {
