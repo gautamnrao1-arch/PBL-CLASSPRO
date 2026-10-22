@@ -137,7 +137,7 @@ Java language is been preferred for this project.<br>
                                         
 <br>
 <b>WEEK 4 IPC MECHANISM EXPLAINATION[why we have choosen this method]</b><br>
-## IPC Components and Responsibilities
+<b>IPC Components and Responsibilities</b>
 
 | File Name | Responsibility | Description |
 |---|---|---|
