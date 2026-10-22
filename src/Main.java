@@ -6,14 +6,16 @@ import javax.swing.SwingUtilities;
  *
  * Central coordinator and entry point for the PIC16F72 Microcontroller Simulator.
  *
- * Coordinates application startup and role-based process execution across the
- * three independent operating-system processes:
- * 1. Logger Process (--role=logger)
- * 2. Core Simulator Process (--role=core)
- * 3. UI Process (--role=ui)
+ * Implements role-based process bootstrapping across three independent operating-system processes:
+ * 1. Logger Process (--role=logger):
+ *    Spawns LoggerProcess, which owns the log file writer and listens on CHANNEL_CORE_LOGGER.
+ * 2. Core Simulator Process (--role=core):
+ *    Spawns CoreProcess, which owns the authoritative CPU, Registers, Memory, Stack, and Queue.
+ * 3. UI Process (--role=ui):
+ *    Spawns SimulatorUI, which contains no simulation state and communicates strictly via IPC.
  *
- * When executed without role arguments or with --role=manager, this class functions
- * as the Process Manager, bootstrapping and monitoring the three independent OS processes.
+ * When launched without arguments (or with --role=manager), Main functions as the ProcessManager
+ * coordinator, spawning the child processes in dependency order and supervising their lifecycle.
  */
 public class Main {
 
@@ -21,89 +23,86 @@ public class Main {
         String role = parseRole(args);
 
         if (IPCConstants.ROLE_LOGGER.equalsIgnoreCase(role)) {
-            // Role: Dedicated Logger Process
+            // Child Role 1: Dedicated Logger Process
             LoggerProcess.main(args);
 
         } else if (IPCConstants.ROLE_CORE.equalsIgnoreCase(role)) {
-            // Role: Dedicated Core Simulator Process
+            // Child Role 2: Dedicated Core Simulator Process
             CoreProcess.main(args);
 
         } else if (IPCConstants.ROLE_UI.equalsIgnoreCase(role)) {
-            // Role: Dedicated UI Process
+            // Child Role 3: Dedicated UI Process (Pure GUI, communicating over IPC)
             launchUIProcess();
 
-        } else if ("standalone".equalsIgnoreCase(role)) {
-            // Optional fallback: Run entire simulator inside a single process
-            launchStandaloneUI();
-
         } else {
-            // Default role: Process Manager coordinating multi-process execution
-            launchMultiProcessCoordinator();
+            // Default Master Role: ProcessManager coordinating independent OS processes
+            launchProcessManager();
         }
     }
 
     /**
-     * Parses the role command-line argument (--role=<role>).
+     * Parses the role command-line argument (--role=<role> or role=<role>).
+     *
+     * @param args Command-line arguments
+     * @return Normalized lowercase role name, or null if none specified
      */
-    private static String parseRole(String[] args) {
+    public static String parseRole(String[] args) {
         if (args == null) return null;
         for (String arg : args) {
-            if (arg != null && arg.toLowerCase().startsWith(IPCConstants.ARG_ROLE_PREFIX)) {
-                return arg.substring(IPCConstants.ARG_ROLE_PREFIX.length()).trim().toLowerCase();
+            if (arg == null) continue;
+            String trimmed = arg.trim();
+            if (trimmed.toLowerCase().startsWith(IPCConstants.ARG_ROLE_PREFIX)) {
+                return trimmed.substring(IPCConstants.ARG_ROLE_PREFIX.length()).trim().toLowerCase();
+            }
+            if (trimmed.toLowerCase().startsWith("role=")) {
+                return trimmed.substring("role=".length()).trim().toLowerCase();
             }
         }
         return null;
     }
 
     /**
-     * Launches the UI process communicating with the Core simulator over IPC.
+     * Boots the UI process on the Swing Event Dispatch Thread (EDT).
+     * The UI connects to Core over the shared IPC abstraction selected by IPCFactory.
      */
     private static void launchUIProcess() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
-                    System.out.println("[UI] Connecting to Core simulator on channel: " + IPCConstants.CHANNEL_UI_CORE);
+                    System.out.println("[UI PROCESS] Connecting to Core simulator over channel: " + IPCConstants.CHANNEL_UI_CORE);
                     IPCManager ipcClient = IPCFactory.createClient(IPCConstants.CHANNEL_UI_CORE);
                     ipcClient.connectClient();
+                    System.out.println("[UI PROCESS] Successfully connected to Core simulator.");
+
                     SimulatorUI ui = new SimulatorUI(ipcClient);
                     ui.setVisible(true);
                 } catch (IOException ex) {
-                    System.err.println("[UI ERROR] Failed to connect to Core via IPC: " + ex.getMessage());
-                    System.err.println("[UI] Falling back to local in-memory CPU controller...");
-                    launchStandaloneUI();
+                    System.err.println("[UI PROCESS ERROR] Could not connect to Core process via IPC: " + ex.getMessage());
+                    System.err.println("[UI PROCESS ERROR] Ensure the Core process is running before starting UI directly.");
+                    System.exit(1);
+                } catch (Exception ex) {
+                    System.err.println("[UI PROCESS ERROR] Unexpected error initializing UI: " + ex.getMessage());
+                    ex.printStackTrace();
+                    System.exit(1);
                 }
             }
         });
     }
 
     /**
-     * Fallback single-process execution for local testing without IPC pipes.
+     * Bootstraps the ProcessManager to spawn and coordinate the independent OS processes.
      */
-    private static void launchStandaloneUI() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Registers registers = new Registers();
-                Memory memory = new Memory();
-                CPU cpu = new CPU(registers, memory);
-                SimulatorUI ui = new SimulatorUI(cpu);
-                ui.setVisible(true);
-            }
-        });
-    }
-
-    /**
-     * Coordinates startup and lifecycle for all three independent OS processes.
-     */
-    private static void launchMultiProcessCoordinator() {
+    private static void launchProcessManager() {
         try {
+            System.out.println("[MAIN] Initializing PIC16F72 Multi-Process Architecture...");
             ProcessManager pm = new ProcessManager();
             pm.launchAll();
             pm.waitForUI();
         } catch (Exception ex) {
-            System.err.println("[MAIN ERROR] Error in Multi-Process Coordinator: " + ex.getMessage());
+            System.err.println("[MAIN ERROR] ProcessManager failed: " + ex.getMessage());
             ex.printStackTrace();
+            System.exit(1);
         }
     }
 }

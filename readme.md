@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 <b><h1>PIC16F72 Virtual Simulator</h1></b> <br>
 
 <b>PROJECT TITLE</b> <br>
@@ -82,55 +80,79 @@ Simulator Requirement The simulator should show the status flags and interrupt e
 Java<br>
 Java language is been preferred for this project.<br>
 
-<b>INITIAL SYSTEM DESIGN/ARCHITECTURE<b><br>
+<b>SYSTEM DESIGN/ARCHITECTURE<b><br>
 
-                -----------------      -------------------
-                | Graphical     |      |                 |  
-                | User          | ---> | Processing Unit | 
-                | Interface     |      |                 |      
-                -----------------      ------------------- 
-                                                |
-                                                |
-                        ----------------------------------------------------------
-                        |                           |                            |
-                ----------------            -----------------              --------------------
-                |              |            |               |              |                  |
-                |   CPU/ALU    |            | Memory model  |              |  Registers and   |               
-                |              |            |               |              |           Flags  |      
-                ----------------            -----------------              --------------------
-                        |                           |                            |
-                        ----------------------------------------------------------
-                                                    |
-                                                    |
-                                          --------------------------------
-                                          |  Peripherals                 |
-                                          |  GPIO | Timer0 | Interrupts  |
-                                          |                              |
-                                          --------------------------------
-                                                    |
-                                                    |
-                                          --------------------------------
-                                          | Simulator Status/            |
-                                          |             Visualization    |
-                                          |                              |
-                                          -------------------------------- 
+               --------------------      -------------------
+               | UI Process       |      |                 |
+        ------>| SimulatorUI.java | ---> |   IPCManager    | 
+        |      |                  |      |                 |
+        |      --------------------      ------------------- 
+        |                                       |
+        |                                       |
+        |                                       ▼ 
+        |                               --------------------
+        |                               |                  |
+        |                               |    IPCFactory    |
+        |                               |                  |
+        |                               --------------------
+        |                                        |       
+        |                                        |  
+        |                                        ▼ 
+        |               ----------------------------------------------------------------
+        |               |                                                              |
+        |               ▼                                                              ▼ 
+        |       ----------------------                                         ------------------
+        |       |                    |                                         |                |
+        |       | Windows Named Pipe |                                         | POSIX FIFO     |
+        |       | Win32 API          |                                         | Linux          |
+        |       |                    |                                         |                |
+        |       ----------------------                                         ------------------
+        |                |                                                            |
+        |                ▼                                                            ▼ 
+        |               ---------------------------------------------------------------
+        |                                           |
+        |                                           |
+        |                              --------------------------------------------
+        |                              |         CORE                             |
+        |                              |         CoreProcess                      |
+        |                              |                                          |
+        |                              --------------------------------------------
+        |                               |    ▲                                  |
+        |                               |    |                                  |
+        |                               |    |                                  |
+        |                               |    |                                  |
+        |                               |    |                                  |
+        |                               ▼    |                                  ▼ 
+        |                       -------------------                     --------------------
+        |                       | CPU / Memory /  |                     | Logger Process   |
+        <---------------------- | Stack / Queue   |                     | LoggerProcess    |
+                                |                 |                     |                  |
+                                -------------------                     --------------------
+                                                                                |
+                                                                                ▼ 
+                                                                        -----------------
+                                                                        | Log Files     | 
+                                                                        |               |
+                                                                        -----------------  
+                                        
+<br>
+<b>WEEK 4 IPC MECHANISM EXPLAINATION[why we have choosen this method]</b><br>
+<b>IPC INTEGRATION - </b>
 
-
-
-
-
-<b>INITIAL DEVELOPMENT PLAN<b><br>
-
-Phase                | Work<br>
-                     |
-Phase 1              | Study PIC16F72 architecture, registers, memory organization and instruction set<br>
-Phase 2              | Design the simulator architecture and data structures<br>
+IPCMessage.java        |	Message contract	|        Defines what a message contains and how its data is represented.<br>
+IPCConstants.java      | 	Shared constants        |	Stores agreed names, message types, commands and possibly pipe/FIFO<br>
+IPCManager.java	Common |     communication interface	|      Defines how components connect, send, receive and close IPC connections.<br>
+IPCFactory.java	       |     Backend selection	        |     Chooses the Windows or Linux implementation based on the platform or configuration.<br>
+WindowsNamedPipeIPC.java  |	Windows transport	|  Sends and receives data through Windows Named Pipes.<br>
+LinuxFifoIPC.java	  |     Linux transport	        |   Uses POSIX named pipes, also called FIFOs, for interprocess communication.<br>
+ProcessManager.java	  | Lifecycle management	|   Starts child processes, tracks them and coordinates termination and cleanup.<br>
+LoggerProcess.java        |   Logging worker	        |     Runs separately, receives log events and passes them to the logger.<br>
+CoreProcess.java	  |   Execution worker	        |   Runs as a separate process and connects IPC requests to the simulator's execution logic.<br>
 
 
 <b>TEAM MEMBERS AND RESPONSIBILITY<b> <br>
 
-Gautam(team Leader): CPU/Register organization + instruction category<br>
-Reeva : Memory organization + stack mechanism<br>
-Yuktha: GPIO + timer<br>
-Sanvi: status/flag info + interrupt mechanism<br>
->>>>>>> week1
+Gautam(team Leader): Integration of IPC Mechanism<br>
+Reeva : Core components[CPU. Memory, Stack....]<br>
+Yuktha: GUI component<br>
+Sanvi: Loggers Status[Handling all logs status]<br>

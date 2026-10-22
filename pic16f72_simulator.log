@@ -1,0 +1,9 @@
+[2026-10-17 00:01:28.203] [LOGGER_INIT] Connected to Core process. Logging to 'pic16f72_simulator.log'
+[2026-10-17 00:01:28.225] [LOG] Core simulator process initialized. PIC16F72 CPU ready.
+[2026-10-17 00:01:29.169] [LOG] Core process connected to UI process on channel 'ui_core'
+[2026-10-17 00:02:11.301] [LOG] LOAD SUCCESS: Loaded 1 instruction(s) into memory.
+[2026-10-17 00:02:24.052] [LOG] LOAD SUCCESS: Loaded 1 instruction(s) into memory.
+[2026-10-17 00:02:26.179] [LOG] RUN: Completed. Terminated=true, PC=0x0001, W=0x05
+[2026-10-17 00:02:59.665] [LOG] SHUTDOWN: Core simulator stopping by request.
+[2026-10-17 00:02:59.667] [SHUTDOWN] Core shutting down
+[2026-10-17 00:02:59.686] [LOGGER_SHUTDOWN] Logger process cleanly shut down.

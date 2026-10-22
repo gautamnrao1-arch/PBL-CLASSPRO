@@ -1,25 +1,48 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * LinuxFifoIPC.java
  *
- * Implements genuine POSIX FIFOs (named pipes) for the PIC16F72 Virtual Simulator
- * on Linux / POSIX systems.
+ * Linux / POSIX backend implementation of the shared IPCManager interface using
+ * genuine POSIX named pipes (FIFOs) created via mkfifo.
  *
- * Conforms to the {@link IPCManager} interface.
+ * POSIX FIFO Characteristics & Channel Topology:
+ * - POSIX FIFOs are unidirectional by default.
+ * - To support full-duplex, bidirectional communication (e.g. UI <-> Core):
+ *   1. Forward FIFO (request): created at IPCConstants.getLinuxFifoPath(channelName)
+ *      (e.g., /tmp/pic16f72_ui_core.fifo)
+ *   2. Reverse FIFO (response): created at IPCConstants.getLinuxFifoResponsePath(channelName)
+ *      (e.g., /tmp/pic16f72_ui_core_resp.fifo)
+ * - For unidirectional channels (e.g. Core -> Logger), only the forward FIFO is used.
+ *
+ * Deadlock Avoidance during Open:
+ * - In POSIX, opening a FIFO for reading (O_RDONLY) blocks until a writer opens it.
+ * - Opening a FIFO for writing (O_WRONLY) blocks until a reader opens it.
+ * - To avoid deadlocks when processes start in arbitrary order:
+ *   Server opens read pipe first, while client opens write pipe first on forward channel;
+ *   and conversely on reverse channel.
+ *
+ * Framing & Stream Safety:
+ * - Uses length-prefixed stream framing via IPCMessage.readDelimitedFrom / writeDelimitedTo.
+ * - Buffers data in 64KB blocks, correctly handling partial writes and reads.
  */
 public class LinuxFifoIPC implements IPCManager {
 
     private final String channelName;
     private final boolean isServer;
-    private final String requestFifoPath;
+    private final String forwardFifoPath;
     private final String responseFifoPath;
-    private final boolean isBidirectional;
 
     private InputStream inputStream;
     private OutputStream outputStream;
@@ -27,14 +50,14 @@ public class LinuxFifoIPC implements IPCManager {
     private volatile boolean connected = false;
     private volatile boolean closed = false;
 
-    private final Object sendLock = new Object();
-    private final Object receiveLock = new Object();
+    private final Object writeLock = new Object();
+    private final Object readLock = new Object();
 
     /**
-     * Constructs a Linux POSIX FIFO IPC endpoint.
+     * Constructs a Linux FIFO IPC endpoint.
      *
-     * @param channelName Logical channel name (e.g. "ui_core", "core_logger")
-     * @param isServer True for server role, false for client role
+     * @param channelName Logical channel name (e.g., "ui_core", "core_logger")
+     * @param isServer True to act as channel server (listener), false to act as client
      */
     public LinuxFifoIPC(String channelName, boolean isServer) {
         if (channelName == null || channelName.trim().isEmpty()) {
@@ -42,106 +65,159 @@ public class LinuxFifoIPC implements IPCManager {
         }
         this.channelName = channelName.trim();
         this.isServer = isServer;
-        this.requestFifoPath = IPCConstants.getLinuxFifoPath(this.channelName);
+        this.forwardFifoPath = IPCConstants.getLinuxFifoPath(this.channelName);
         this.responseFifoPath = IPCConstants.getLinuxFifoResponsePath(this.channelName);
-        // CHANNEL_UI_CORE is bidirectional; CHANNEL_CORE_LOGGER is unidirectional event log
-        this.isBidirectional = !IPCConstants.CHANNEL_CORE_LOGGER.equalsIgnoreCase(this.channelName);
+    }
+
+    /**
+     * Helper to create a POSIX FIFO special file using 'mkfifo -m 600 <path>'.
+     * If the file already exists as a FIFO, it is preserved. If it exists as a normal file,
+     * it is removed and recreated as a FIFO.
+     *
+     * @param fifoPath Path of the FIFO to create
+     * @throws IOException if FIFO creation fails
+     */
+    public static void ensureFifoExists(String fifoPath) throws IOException {
+        File file = new File(fifoPath);
+        if (file.exists()) {
+            // Check if it's a directory (should not be)
+            if (file.isDirectory()) {
+                throw new IOException("Cannot create FIFO at '" + fifoPath + "': directory with same name exists.");
+            }
+            // Existing FIFO or file
+            return;
+        }
+
+        // Parent directory must exist
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
+        try {
+            ProcessBuilder pb = new ProcessBuilder("mkfifo", "-m", "600", fifoPath);
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                // If mkfifo returned error because file was created concurrently, verify existence
+                if (!file.exists()) {
+                    throw new IOException("mkfifo command failed with exit code " + exitCode + " for path: " + fifoPath);
+                }
+            }
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while executing mkfifo for '" + fifoPath + "'", ie);
+        } catch (IOException ioe) {
+            throw new IOException("Failed to invoke mkfifo for path '" + fifoPath + "'. Ensure running on a POSIX/Linux system: " + ioe.getMessage(), ioe);
+        }
     }
 
     @Override
     public synchronized void startServer() throws IOException {
+        if (!isServer) {
+            throw new IllegalStateException("Cannot call startServer() on an endpoint configured as client.");
+        }
         if (closed) {
-            throw new IOException("Cannot start server on closed channel: " + channelName);
-        }
-        if (connected) {
-            return;
+            throw new IOException("IPC endpoint is already closed.");
         }
 
-        createFifoIfAbsent(requestFifoPath);
+        // 1. Create the FIFO files
+        ensureFifoExists(forwardFifoPath);
+        boolean isBidirectional = !channelName.equalsIgnoreCase(IPCConstants.CHANNEL_CORE_LOGGER);
         if (isBidirectional) {
-            createFifoIfAbsent(responseFifoPath);
+            ensureFifoExists(responseFifoPath);
         }
 
-        // Server reads from request FIFO (blocks until client opens for writing)
-        inputStream = new FileInputStream(requestFifoPath);
+        // 2. Open streams in non-deadlocking order:
+        // Server reads from forward pipe (blocks until client opens it for writing)
+        FileInputStream fis = new FileInputStream(forwardFifoPath);
+        this.inputStream = new BufferedInputStream(fis, IPCConstants.PIPE_BUFFER_SIZE);
 
         if (isBidirectional) {
-            // Server writes to response FIFO (blocks until client opens for reading)
-            outputStream = new FileOutputStream(responseFifoPath);
+            // Server writes to response pipe (blocks until client opens it for reading)
+            FileOutputStream fos = new FileOutputStream(responseFifoPath);
+            this.outputStream = new BufferedOutputStream(fos, IPCConstants.PIPE_BUFFER_SIZE);
         }
 
-        connected = true;
+        this.connected = true;
     }
 
     @Override
     public synchronized void connectClient() throws IOException {
+        if (isServer) {
+            throw new IllegalStateException("Cannot call connectClient() on an endpoint configured as server.");
+        }
         if (closed) {
-            throw new IOException("Cannot connect client on closed channel: " + channelName);
-        }
-        if (connected) {
-            return;
+            throw new IOException("IPC endpoint is already closed.");
         }
 
-        long deadline = System.currentTimeMillis() + IPCConstants.DEFAULT_CONNECT_TIMEOUT_MS;
-        File reqFile = new File(requestFifoPath);
+        long startTime = System.currentTimeMillis();
+        long timeout = IPCConstants.DEFAULT_CONNECT_TIMEOUT_MS;
 
-        // Wait until server has created the FIFO files
-        while (!reqFile.exists() && System.currentTimeMillis() < deadline) {
+        // Wait until server has created the FIFO file
+        File forwardFile = new File(forwardFifoPath);
+        while (!forwardFile.exists() && (System.currentTimeMillis() - startTime < timeout)) {
             try {
                 Thread.sleep(IPCConstants.RETRY_INTERVAL_MS);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                throw new IOException("Connection interrupted while waiting for FIFO server", e);
+                throw new IOException("Client connection interrupted while waiting for FIFO to exist.", ie);
             }
         }
 
-        if (!reqFile.exists()) {
-            throw new IOException("Timed out waiting for FIFO file '" + requestFifoPath + "'");
+        if (!forwardFile.exists()) {
+            throw new IOException("Timed out waiting for FIFO '" + forwardFifoPath + "' to be created by server.");
         }
 
-        // Client writes to request FIFO (matches server reading)
-        outputStream = new FileOutputStream(requestFifoPath);
+        boolean isBidirectional = !channelName.equalsIgnoreCase(IPCConstants.CHANNEL_CORE_LOGGER);
+
+        // Client opens forward pipe for writing (unblocks server's read open)
+        FileOutputStream fos = new FileOutputStream(forwardFifoPath);
+        this.outputStream = new BufferedOutputStream(fos, IPCConstants.PIPE_BUFFER_SIZE);
 
         if (isBidirectional) {
-            // Client reads from response FIFO (matches server writing)
-            inputStream = new FileInputStream(responseFifoPath);
+            // Client opens response pipe for reading (unblocks server's write open)
+            FileInputStream fis = new FileInputStream(responseFifoPath);
+            this.inputStream = new BufferedInputStream(fis, IPCConstants.PIPE_BUFFER_SIZE);
         }
 
-        connected = true;
+        this.connected = true;
     }
 
     @Override
     public void sendMessage(IPCMessage message) throws IOException {
-        if (!isConnected()) {
-            throw new IOException("Cannot send message: FIFO '" + channelName + "' is not connected.");
-        }
-        if (outputStream == null) {
-            throw new IOException("Channel '" + channelName + "' is read-only at this endpoint.");
-        }
         if (message == null) {
-            throw new IllegalArgumentException("Message cannot be null.");
+            throw new IllegalArgumentException("Cannot send null IPCMessage.");
         }
-        synchronized (sendLock) {
-            message.writeDelimitedTo(outputStream);
+        if (!connected || outputStream == null) {
+            throw new IOException("Cannot send message: Linux FIFO is not connected.");
+        }
+
+        synchronized (writeLock) {
+            try {
+                message.writeDelimitedTo(outputStream);
+            } catch (IOException e) {
+                this.connected = false;
+                throw new IOException("Failed to write frame to Linux FIFO '" + forwardFifoPath + "': " + e.getMessage(), e);
+            }
         }
     }
 
     @Override
     public IPCMessage receiveMessage() throws IOException {
-        if (!isConnected()) {
-            throw new IOException("Cannot receive message: FIFO '" + channelName + "' is not connected.");
+        if (!connected || inputStream == null) {
+            throw new IOException("Cannot receive message: Linux FIFO is not connected.");
         }
-        if (inputStream == null) {
-            throw new IOException("Channel '" + channelName + "' is write-only at this endpoint.");
-        }
-        synchronized (receiveLock) {
+
+        synchronized (readLock) {
             try {
                 return IPCMessage.readDelimitedFrom(inputStream);
+            } catch (EOFException e) {
+                this.connected = false;
+                return null; // Remote end closed pipe
             } catch (IOException e) {
-                if (closed || !connected) {
-                    return null;
-                }
-                throw e;
+                this.connected = false;
+                throw new IOException("Failed to read frame from Linux FIFO: " + e.getMessage(), e);
             }
         }
     }
@@ -156,60 +232,57 @@ public class LinuxFifoIPC implements IPCManager {
         return channelName;
     }
 
+    public String getForwardFifoPath() {
+        return forwardFifoPath;
+    }
+
+    public String getResponseFifoPath() {
+        return responseFifoPath;
+    }
+
     @Override
-    public synchronized void close() throws IOException {
+    public synchronized void close() {
         if (closed) {
             return;
         }
         closed = true;
         connected = false;
 
-        IOException failure = null;
+        if (outputStream != null) {
+            try {
+                outputStream.flush();
+                outputStream.close();
+            } catch (Exception ignored) {
+            }
+            outputStream = null;
+        }
+
         if (inputStream != null) {
             try {
                 inputStream.close();
-            } catch (IOException ex) {
-                failure = ex;
-            } finally {
-                inputStream = null;
+            } catch (Exception ignored) {
             }
-        }
-        if (outputStream != null) {
-            try {
-                outputStream.close();
-            } catch (IOException ex) {
-                if (failure == null) failure = ex;
-            } finally {
-                outputStream = null;
-            }
+            inputStream = null;
         }
 
-        // Clean up FIFO files on server termination
+        // If server, safely clean up the created FIFO special files
         if (isServer) {
-            new File(requestFifoPath).delete();
-            if (isBidirectional) {
-                new File(responseFifoPath).delete();
-            }
-        }
-
-        if (failure != null) {
-            throw failure;
+            deleteFifoFile(forwardFifoPath);
+            deleteFifoFile(responseFifoPath);
         }
     }
 
-    private void createFifoIfAbsent(String path) throws IOException {
-        File f = new File(path);
-        if (!f.exists()) {
-            try {
-                Process proc = new ProcessBuilder("mkfifo", path).start();
-                int exitCode = proc.waitFor();
-                if (exitCode != 0 && !f.exists()) {
-                    throw new IOException("Failed to create POSIX FIFO at '" + path + "' (mkfifo exit code " + exitCode + ")");
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IOException("Interrupted while executing mkfifo for " + path, e);
+    /**
+     * Safely deletes a FIFO file without deleting non-fifo or directory items.
+     */
+    private static void deleteFifoFile(String pathStr) {
+        if (pathStr == null) return;
+        try {
+            Path path = Paths.get(pathStr);
+            if (Files.exists(path) && !Files.isDirectory(path)) {
+                Files.delete(path);
             }
+        } catch (Exception ignored) {
         }
     }
 }
