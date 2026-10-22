@@ -137,17 +137,20 @@ Java language is been preferred for this project.<br>
                                         
 <br>
 <b>WEEK 4 IPC MECHANISM EXPLAINATION[why we have choosen this method]</b><br>
-<b>IPC INTEGRATION - </b>
+## IPC Components and Responsibilities
 
-IPCMessage.java        |	Message contract	|        Defines what a message contains and how its data is represented.<br>
-IPCConstants.java      | 	Shared constants        |	Stores agreed names, message types, commands and possibly pipe/FIFO<br>
-IPCManager.java	Common |     communication interface	|      Defines how components connect, send, receive and close IPC connections.<br>
-IPCFactory.java	       |     Backend selection	        |     Chooses the Windows or Linux implementation based on the platform or configuration.<br>
-WindowsNamedPipeIPC.java  |	Windows transport	|  Sends and receives data through Windows Named Pipes.<br>
-LinuxFifoIPC.java	  |     Linux transport	        |   Uses POSIX named pipes, also called FIFOs, for interprocess communication.<br>
-ProcessManager.java	  | Lifecycle management	|   Starts child processes, tracks them and coordinates termination and cleanup.<br>
-LoggerProcess.java        |   Logging worker	        |     Runs separately, receives log events and passes them to the logger.<br>
-CoreProcess.java	  |   Execution worker	        |   Runs as a separate process and connects IPC requests to the simulator's execution logic.<br>
+| File Name | Responsibility | Description |
+|---|---|---|
+| `IPCMessage.java` | Message Contract | Defines the structure of an IPC message and how its data is represented. |
+| `IPCConstants.java` | Shared Constants | Stores common names, message types, commands, and other IPC-related constants, including pipe or FIFO identifiers where applicable. |
+| `IPCManager.java` | Communication Interface | Defines the common interface for establishing connections, sending and receiving messages, and closing IPC connections. |
+| `IPCFactory.java` | Backend Selection | Selects the appropriate Windows or Linux IPC implementation based on the operating system or configuration. |
+| `WindowsNamedPipeIPC.java` | Windows Transport | Implements interprocess communication using Windows Named Pipes to send and receive data between processes. |
+| `LinuxFifoIPC.java` | Linux Transport | Implements interprocess communication using POSIX named pipes (FIFOs) on Linux systems. |
+| `ProcessManager.java` | Lifecycle Management | Starts and monitors child processes and coordinates their termination and resource cleanup. |
+| `LoggerProcess.java` | Logging Worker | Runs as a separate process, receives log events through IPC, and forwards them to the logging system. |
+| `CoreProcess.java` | Execution Worker | Runs as a separate process, handles IPC requests, and connects them to the simulator's execution logic. |
+
 
 
 <b>TEAM MEMBERS AND RESPONSIBILITY<b> <br>
