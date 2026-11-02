@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 import java.util.Arrays;
+=======
+import java.util.ArrayDeque;
+>>>>>>> week4
 
 /**
  * FIFOQueue.java
  *
+<<<<<<< HEAD
  * Simulates a First-In, First-Out (FIFO) circular queue for the PIC16F72 simulator.
  *
  * Features:
@@ -75,10 +80,26 @@ public class FIFOQueue {
      * @param value Value to enqueue
      * @return true if enqueued successfully, false if queue is full
      */
+=======
+ * FIFO Queue used by the Core Process.
+ */
+public class FIFOQueue {
+
+    private static final int QUEUE_CAPACITY = 8;
+
+    private final ArrayDeque<Integer> queue;
+
+    public FIFOQueue() {
+        queue = new ArrayDeque<>();
+    }
+
+    // ENQUEUE operation
+>>>>>>> week4
     public boolean enqueue(int value) {
         if (isFull()) {
             return false;
         }
+<<<<<<< HEAD
         this.queue[this.rear] = value;
         this.rear = (this.rear + 1) % this.maxSize;
         this.size++;
@@ -214,3 +235,51 @@ public class FIFOQueue {
         return sb.toString().trim();
     }
 }
+=======
+
+        queue.addLast(value & 0xFF);
+        return true;
+    }
+
+    // DEQUEUE operation
+    public int dequeue() {
+        if (isEmpty()) {
+            return -1;
+        }
+
+        return queue.removeFirst();
+    }
+
+    public int peek() {
+        if (isEmpty()) {
+            return -1;
+        }
+
+        return queue.peekFirst();
+    }
+
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
+    public boolean isFull() {
+        return queue.size() >= QUEUE_CAPACITY;
+    }
+
+    public int size() {
+        return queue.size();
+    }
+
+    public void reset() {
+        queue.clear();
+    }
+
+    public String getState() {
+        if (queue.isEmpty()) {
+            return "Queue: EMPTY";
+        }
+
+        return "Queue: " + queue.toString();
+    }
+}
+>>>>>>> week4
