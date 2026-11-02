@@ -82,7 +82,7 @@ It helps the processor know where to come back after the subroutine finishes.<br
 Java language is been preferred for this project.<br>
 
 <b>SYSTEM DESIGN/ARCHITECTURE<b><br>
-<b>
+
                --------------------      -------------------
                | UI Process       |      |                 |
         ------>| SimulatorUI.java | ---> |   IPCManager    | 
@@ -136,7 +136,7 @@ Java language is been preferred for this project.<br>
                                                                         |               |
                                                                         -----------------  
                                         
-</b><br>
+<br>
 <b>WEEK 4 IPC MECHANISM EXPLAINATION[why we have choosen this method]</b><br>
 <b>IPC Components and Responsibilities</b>
 
