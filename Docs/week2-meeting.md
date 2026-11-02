@@ -1,8 +1,11 @@
 Meeting Minutes
 
 Date: 1 September 2026
+
 Meeting Number: 2
+
 Place: library
+
 Participants:Gautam, Reeva, Yuktha, Sanvi
 
  Agenda
