@@ -159,4 +159,4 @@ Java language is been preferred for this project.<br>
 Gautam(team Leader): Integration of IPC Mechanism<br>
 Reeva : Core components[CPU. Memory, Stack....]<br>
 Yuktha: GUI component<br>
-Sanvi: Loggers Status[Handling all logs status]<br>
+Sanvi: Loggers Status[Handling all logs status]<br> 
