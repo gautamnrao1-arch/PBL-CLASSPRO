@@ -428,6 +428,8 @@ public class CoreProcess {
 
     /**
      * Parses multiline assembly text into an ArrayList of Instruction objects.
+     * Supports a two-pass assembler resolution for labels (e.g. LOOP:, GOTO LOOP)
+     * and symbol definitions (e.g. CRC_HIGH EQU 0x20 or CRC_HIGH = 0x20).
      */
     public static ArrayList<Instruction> parseProgram(String text) {
         ArrayList<Instruction> instructions = new ArrayList<Instruction>();
@@ -436,8 +438,31 @@ public class CoreProcess {
         }
 
         String[] lines = text.split("\\r?\\n");
+        Map<String, String> symbols = new HashMap<String, String>();
+        Map<String, Integer> labels = new HashMap<String, Integer>();
+
+        // Pre-populate standard PIC SFR symbols
+        symbols.put("INDF", "0x00");
+        symbols.put("TMR0", "0x01");
+        symbols.put("PCL", "0x02");
+        symbols.put("STATUS", "0x03");
+        symbols.put("FSR", "0x04");
+        symbols.put("PORTA", "0x05");
+        symbols.put("PORTB", "0x06");
+        symbols.put("PORTC", "0x07");
+
+        // Intermediate structure for pass 1
+        class RawEntry {
+            String opcode;
+            String[] operands;
+            String rawLine;
+            int address;
+        }
+        ArrayList<RawEntry> rawEntries = new ArrayList<RawEntry>();
+
         int address = 0;
 
+        // PASS 1: Extract symbols, labels, and collect instructions
         for (String rawLine : lines) {
             String line = rawLine.trim();
 
@@ -458,12 +483,42 @@ public class CoreProcess {
                 continue;
             }
 
+            // Check for EQU / = symbol definition: e.g. "CRC_HIGH EQU 0x20" or "CRC_HIGH = 0x20"
+            String[] defTokens = line.split("[,\\s]+");
+            if (defTokens.length >= 3 && (defTokens[1].equalsIgnoreCase("EQU") || defTokens[1].equals("="))) {
+                String symName = defTokens[0].trim().toUpperCase();
+                String symVal = defTokens[2].trim();
+                symbols.put(symName, symVal);
+                continue;
+            }
+
+            // Check for label: e.g. "BIT_LOOP:" or "BIT_LOOP: BCF STATUS, 0"
+            String labelName = null;
+            if (line.contains(":")) {
+                int colonIdx = line.indexOf(':');
+                labelName = line.substring(0, colonIdx).trim().toUpperCase();
+                line = line.substring(colonIdx + 1).trim();
+            } else if (defTokens.length == 1 && !InstructionSet.isValidOpcode(defTokens[0])) {
+                // Label without colon on its own line: e.g. "BIT_LOOP"
+                labelName = defTokens[0].trim().toUpperCase();
+                line = "";
+            }
+
+            if (labelName != null && !labelName.isEmpty()) {
+                labels.put(labelName, address);
+            }
+
+            if (line.isEmpty()) {
+                // Line only had a label marker, points to next instruction address
+                continue;
+            }
+
             String[] tokens = line.split("[,\\s]+");
             if (tokens.length == 0 || tokens[0].trim().isEmpty()) {
                 continue;
             }
 
-            String opcode = tokens[0].trim();
+            String opcode = tokens[0].trim().toUpperCase();
             String[] operands;
             if (tokens.length > 1) {
                 operands = new String[tokens.length - 1];
@@ -472,8 +527,34 @@ public class CoreProcess {
                 operands = new String[0];
             }
 
-            Instruction inst = new Instruction(opcode, operands, rawLine.trim());
-            inst.setAddress(address++);
+            RawEntry entry = new RawEntry();
+            entry.opcode = opcode;
+            entry.operands = operands;
+            entry.rawLine = rawLine.trim();
+            entry.address = address++;
+            rawEntries.add(entry);
+        }
+
+        // PASS 2: Resolve symbols and labels in operands
+        for (RawEntry entry : rawEntries) {
+            String[] resolvedOperands = new String[entry.operands.length];
+            for (int i = 0; i < entry.operands.length; i++) {
+                String op = entry.operands[i].trim();
+                String opUpper = op.toUpperCase();
+
+                if (labels.containsKey(opUpper)) {
+                    // Branch target label -> resolve to instruction address
+                    resolvedOperands[i] = String.valueOf(labels.get(opUpper));
+                } else if (symbols.containsKey(opUpper)) {
+                    // Constant/symbol -> resolve to symbol value
+                    resolvedOperands[i] = symbols.get(opUpper);
+                } else {
+                    resolvedOperands[i] = op;
+                }
+            }
+
+            Instruction inst = new Instruction(entry.opcode, resolvedOperands, entry.rawLine);
+            inst.setAddress(entry.address);
             instructions.add(inst);
         }
 

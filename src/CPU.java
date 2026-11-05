@@ -13,13 +13,16 @@ import java.util.ArrayList;
  * - Memory: Program memory (instructions) and simulated data memory.
  * - Working Register (W): Internal 8-bit accumulator.
  *
- * Week 2 Supported Instructions:
- * - DATA TRANSFER:       MOVLW, MOVWF
+ * Supported Instructions:
+ * - DATA TRANSFER:       MOVLW, MOVWF, MOVF, CLRF
  * - ARITHMETIC:          ADDWF, SUBWF
- * - LOGICAL:             ANDWF
- * - INCREMENT/DECREMENT: INCF
+ * - LOGICAL:             ANDWF, XORWF, XORLW
+ * - INCREMENT/DECREMENT: INCF, DECFSZ
+ * - SHIFT/ROTATE:        RLF, RRF
+ * - BIT-ORIENTED:        BCF, BSF, BTFSC, BTFSS
  * - CONTROL FLOW:        GOTO
  * - TERMINATION:         SLEEP
+ * - STACK/QUEUE:         PUSH, POP, ENQUEUE, DEQUEUE
  */
 public class CPU {
 
@@ -120,7 +123,7 @@ public class CPU {
      * 9. Return ExecutionResult.
      *
      * @return ExecutionResult containing pipeline trace and state changes
-     *
+     */
     public ExecutionResult step() {
         // 1. Save PC before execution
         int pcBefore = this.registers.getPC();
@@ -281,6 +284,46 @@ public class CPU {
                     break;
                 }
 
+                case "MOVF": {
+                    // Move File Register to destination (0 = W, 1 = f)
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int d = parseDestination(instruction.getOperand(1));
+                    int valF = this.registers.getRegister(f);
+
+                    this.registers.setZeroFlag(valF == 0 ? 1 : 0);
+
+                    if (d == 0) {
+                        this.w = valF;
+                        result.addRegisterChange(String.format("W = 0x%02X (%d)", this.w, this.w));
+                    } else {
+                        this.registers.setRegister(f, valF);
+                        this.memory.write(f, valF);
+                        result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, valF));
+                    }
+
+                    result.addRegisterChange(String.format("STATUS = 0x%02X (%s)", this.registers.getStatus(), this.registers.getFlagState()));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("MOVF: Reg[0x%02X] = 0x%02X -> %s", f, valF, (d == 0 ? "W" : "F")));
+                    break;
+                }
+
+                case "CLRF": {
+                    // Clear File Register to 0
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    this.registers.setRegister(f, 0);
+                    this.memory.write(f, 0);
+                    this.registers.setZeroFlag(1);
+
+                    result.addRegisterChange(String.format("Reg[0x%02X] = 0x00", f));
+                    result.addMemoryChange(String.format("DataMem[0x%02X] = 0x00", f));
+                    result.addRegisterChange(String.format("STATUS = 0x%02X (%s)", this.registers.getStatus(), this.registers.getFlagState()));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("CLRF: Reg[0x%02X] cleared to 0", f));
+                    break;
+                }
+
                 case "ADDWF": {
                     // Add W and File Register: dest = W + f
                     int f = parseValue(instruction.getOperand(0)) & 0xFF;
@@ -370,6 +413,47 @@ public class CPU {
                     break;
                 }
 
+                case "XORWF": {
+                    // Exclusive OR W with File Register: dest = f ^ W
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int d = parseDestination(instruction.getOperand(1));
+                    int valF = this.registers.getRegister(f);
+                    int res8 = (valF ^ this.w) & 0xFF;
+
+                    // Zero flag affected
+                    this.registers.setZeroFlag(res8 == 0 ? 1 : 0);
+
+                    if (d == 0) {
+                        this.w = res8;
+                        result.addRegisterChange(String.format("W = 0x%02X", this.w));
+                    } else {
+                        this.registers.setRegister(f, res8);
+                        this.memory.write(f, res8);
+                        result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, res8));
+                        result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, res8));
+                    }
+
+                    result.addRegisterChange(String.format("STATUS = 0x%02X (%s)", this.registers.getStatus(), this.registers.getFlagState()));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("XORWF: Reg[0x%02X] (0x%02X) XOR W (0x%02X) = 0x%02X (dest=%s)", f, valF, this.w, res8, (d == 0 ? "W" : "F")));
+                    break;
+                }
+
+                case "XORLW": {
+                    // Exclusive OR Literal with W: W = W ^ k
+                    int k = parseValue(instruction.getOperand(0)) & 0xFF;
+                    this.w = (this.w ^ k) & 0xFF;
+                    this.registers.setZeroFlag(this.w == 0 ? 1 : 0);
+
+                    result.addRegisterChange(String.format("W = 0x%02X", this.w));
+                    result.addRegisterChange(String.format("STATUS = 0x%02X (%s)", this.registers.getStatus(), this.registers.getFlagState()));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("XORLW 0x%02X: W = 0x%02X", k, this.w));
+                    break;
+                }
+
                 case "INCF": {
                     // Increment File Register: dest = f + 1
                     int f = parseValue(instruction.getOperand(0)) & 0xFF;
@@ -394,6 +478,162 @@ public class CPU {
                     result.setExecuteComplete(true);
                     result.setSuccess(true);
                     result.setResultMessage(String.format("INCF: Reg[0x%02X] (0x%02X) + 1 = 0x%02X (dest=%s)", f, valF, res8, (d == 0 ? "W" : "F")));
+                    break;
+                }
+
+                case "DECFSZ": {
+                    // Decrement f, Skip if 0
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int d = parseDestination(instruction.getOperand(1));
+                    int valF = this.registers.getRegister(f);
+                    int res8 = (valF - 1) & 0xFF;
+
+                    if (d == 0) {
+                        this.w = res8;
+                        result.addRegisterChange(String.format("W = 0x%02X", this.w));
+                    } else {
+                        this.registers.setRegister(f, res8);
+                        this.memory.write(f, res8);
+                        result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, res8));
+                        result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, res8));
+                    }
+
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    if (res8 == 0) {
+                        this.registers.incrementPC();
+                        result.setResultMessage(String.format("DECFSZ: Reg[0x%02X] decremented to 0 -> SKIP next instruction (PC -> 0x%04X)", f, this.registers.getPC()));
+                    } else {
+                        result.setResultMessage(String.format("DECFSZ: Reg[0x%02X] decremented to 0x%02X -> NO SKIP", f, res8));
+                    }
+                    break;
+                }
+
+                case "RLF": {
+                    // Rotate Left f through Carry
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int d = parseDestination(instruction.getOperand(1));
+                    int valF = this.registers.getRegister(f);
+                    int cIn = this.registers.getCarryFlag();
+                    int cOut = (valF >> 7) & 1;
+                    int res8 = ((valF << 1) | cIn) & 0xFF;
+
+                    this.registers.setCarryFlag(cOut);
+
+                    if (d == 0) {
+                        this.w = res8;
+                        result.addRegisterChange(String.format("W = 0x%02X", this.w));
+                    } else {
+                        this.registers.setRegister(f, res8);
+                        this.memory.write(f, res8);
+                        result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, res8));
+                        result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, res8));
+                    }
+
+                    result.addRegisterChange(String.format("STATUS = 0x%02X (C=%d)", this.registers.getStatus(), cOut));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("RLF: Reg[0x%02X] (0x%02X) rotated left with C=%d -> 0x%02X (new C=%d)", f, valF, cIn, res8, cOut));
+                    break;
+                }
+
+                case "RRF": {
+                    // Rotate Right f through Carry
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int d = parseDestination(instruction.getOperand(1));
+                    int valF = this.registers.getRegister(f);
+                    int cIn = this.registers.getCarryFlag();
+                    int cOut = valF & 1;
+                    int res8 = ((valF >> 1) | (cIn << 7)) & 0xFF;
+
+                    this.registers.setCarryFlag(cOut);
+
+                    if (d == 0) {
+                        this.w = res8;
+                        result.addRegisterChange(String.format("W = 0x%02X", this.w));
+                    } else {
+                        this.registers.setRegister(f, res8);
+                        this.memory.write(f, res8);
+                        result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X", f, res8));
+                        result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, res8));
+                    }
+
+                    result.addRegisterChange(String.format("STATUS = 0x%02X (C=%d)", this.registers.getStatus(), cOut));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("RRF: Reg[0x%02X] (0x%02X) rotated right with C=%d -> 0x%02X (new C=%d)", f, valF, cIn, res8, cOut));
+                    break;
+                }
+
+                case "BCF": {
+                    // Bit Clear File Register
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int b = parseValue(instruction.getOperand(1)) & 0x07;
+                    int valF = this.registers.getRegister(f);
+                    int res8 = valF & ~(1 << b);
+
+                    this.registers.setRegister(f, res8);
+                    this.memory.write(f, res8);
+
+                    result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X (bit %d cleared)", f, res8, b));
+                    result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, res8));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("BCF: Reg[0x%02X] bit %d cleared -> 0x%02X", f, b, res8));
+                    break;
+                }
+
+                case "BSF": {
+                    // Bit Set File Register
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int b = parseValue(instruction.getOperand(1)) & 0x07;
+                    int valF = this.registers.getRegister(f);
+                    int res8 = valF | (1 << b);
+
+                    this.registers.setRegister(f, res8);
+                    this.memory.write(f, res8);
+
+                    result.addRegisterChange(String.format("Reg[0x%02X] = 0x%02X (bit %d set)", f, res8, b));
+                    result.addMemoryChange(String.format("DataMem[0x%02X] = 0x%02X", f, res8));
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    result.setResultMessage(String.format("BSF: Reg[0x%02X] bit %d set -> 0x%02X", f, b, res8));
+                    break;
+                }
+
+                case "BTFSC": {
+                    // Bit Test File Skip if Clear (bit == 0)
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int b = parseValue(instruction.getOperand(1)) & 0x07;
+                    int valF = this.registers.getRegister(f);
+                    int bitVal = (valF >> b) & 1;
+
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    if (bitVal == 0) {
+                        this.registers.incrementPC();
+                        result.setResultMessage(String.format("BTFSC: Reg[0x%02X] bit %d is 0 -> SKIP next instruction (PC -> 0x%04X)", f, b, this.registers.getPC()));
+                    } else {
+                        result.setResultMessage(String.format("BTFSC: Reg[0x%02X] bit %d is 1 -> NO SKIP", f, b));
+                    }
+                    break;
+                }
+
+                case "BTFSS": {
+                    // Bit Test File Skip if Set (bit == 1)
+                    int f = parseValue(instruction.getOperand(0)) & 0xFF;
+                    int b = parseValue(instruction.getOperand(1)) & 0x07;
+                    int valF = this.registers.getRegister(f);
+                    int bitVal = (valF >> b) & 1;
+
+                    result.setExecuteComplete(true);
+                    result.setSuccess(true);
+                    if (bitVal == 1) {
+                        this.registers.incrementPC();
+                        result.setResultMessage(String.format("BTFSS: Reg[0x%02X] bit %d is 1 -> SKIP next instruction (PC -> 0x%04X)", f, b, this.registers.getPC()));
+                    } else {
+                        result.setResultMessage(String.format("BTFSS: Reg[0x%02X] bit %d is 0 -> NO SKIP", f, b));
+                    }
                     break;
                 }
 
@@ -626,6 +866,7 @@ public class CPU {
 
     /**
      * Helper to parse integer operand values formatted as hex, decimal, or PIC assembly literals.
+     * Also recognizes standard PIC register aliases (STATUS, INDF, FSR, C, DC, Z).
      *
      * @param s Operand string (e.g., "0x20", "20h", "H'20'", "32", "D'32'")
      * @return Parsed integer value
@@ -635,6 +876,22 @@ public class CPU {
             return 0;
         }
         s = s.trim();
+
+        // Recognize standard PIC register/flag aliases if used directly as operands
+        if (s.equalsIgnoreCase("STATUS")) return Registers.STATUS_ADDR;
+        if (s.equalsIgnoreCase("INDF")) return Registers.INDF_ADDR;
+        if (s.equalsIgnoreCase("FSR")) return Registers.FSR_ADDR;
+        if (s.equalsIgnoreCase("PCL")) return 0x02;
+        if (s.equalsIgnoreCase("TMR0")) return 0x01;
+        if (s.equalsIgnoreCase("PORTA")) return 0x05;
+        if (s.equalsIgnoreCase("PORTB")) return 0x06;
+        if (s.equalsIgnoreCase("PORTC")) return 0x07;
+        if (s.equalsIgnoreCase("W")) return 0;
+        if (s.equalsIgnoreCase("F")) return 1;
+        if (s.equalsIgnoreCase("C")) return 0;
+        if (s.equalsIgnoreCase("DC")) return 1;
+        if (s.equalsIgnoreCase("Z")) return 2;
+
         if (s.startsWith("0x") || s.startsWith("0X")) {
             return Integer.parseInt(s.substring(2), 16);
         }

@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
@@ -7,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 /**
@@ -17,7 +19,9 @@ import javax.swing.SwingUtilities;
  * 2. Centered header title label with font size 23 and bold text.
  * 3. Architecture check: UI does not own CPU, Memory, Registers, or Stack state fields.
  * 4. Asynchronous snapshot application and UI component updates.
- * 5. Clean shutdown and resource release.
+ * 5. Dynamic CRC Extraction from live register dump without hardcoding.
+ * 6. Assembly Error Display with light-red background and normal light-grey reset.
+ * 7. Clean shutdown and resource release.
  */
 public class SimulatorUITest {
 
@@ -32,6 +36,8 @@ public class SimulatorUITest {
         testWindowTitleAndTypography();
         testNoCpuOrMemoryStateInUI();
         testSnapshotApplication();
+        testDynamicCrcExtraction();
+        testAssemblyErrorDisplayAndTheme();
 
         System.out.println("=================================================");
         System.out.println(String.format("Tests Passed: %d / %d", passedCount, totalCount));
@@ -140,6 +146,98 @@ public class SimulatorUITest {
 
         recordResult("Test 3: Asynchronous State Snapshot Application", pass[0],
                 "Snapshot correctly decoded and applied to UI components without exceptions");
+    }
+
+    /**
+     * Test 4: Verify dynamic extraction of CRC from live register dump without hardcoding.
+     */
+    private static void testDynamicCrcExtraction() throws Exception {
+        final boolean[] pass = {false};
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                SimulatorUI ui = new SimulatorUI((IPCManager) null);
+
+                // Simulate snapshot with RAM 0x20 = 0x29 (CRC_HIGH) and RAM 0x21 = 0xB1 (CRC_LOW)
+                Map<String, String> snapshot = new HashMap<String, String>();
+                snapshot.put(IPCConstants.KEY_STATUS_STR, "TERMINATED");
+                snapshot.put(IPCConstants.KEY_REG_DUMP,
+                        "General Purpose Registers (RAM 0x20 - 0x2F):\n" +
+                        "  [0x20]: 29  [0x21]: B1  [0x22]: 00  [0x23]: 00\n");
+
+                ui.applyStateSnapshot(snapshot);
+
+                JLabel highLabel = findLabelWithText(ui.getContentPane(), "0x29");
+                JLabel lowLabel = findLabelWithText(ui.getContentPane(), "0xB1");
+                JLabel crcResultLabel = findLabelWithText(ui.getContentPane(), "0x29B1");
+                JLabel statusLabel = findLabelWithText(ui.getContentPane(), "COMPLETED");
+
+                pass[0] = (highLabel != null && lowLabel != null && crcResultLabel != null && statusLabel != null);
+
+                ui.shutdown();
+                ui.dispose();
+            }
+        });
+
+        recordResult("Test 4: Dynamic CRC-16 Extraction from REG_DUMP", pass[0],
+                "CRC_HIGH (0x29), CRC_LOW (0xB1) and Result (0x29B1) dynamically extracted and displayed");
+    }
+
+    /**
+     * Test 5: Verify Assembly Error Display with light-red background and normal light-grey reset.
+     */
+    private static void testAssemblyErrorDisplayAndTheme() throws Exception {
+        final boolean[] results = new boolean[2];
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                SimulatorUI ui = new SimulatorUI((IPCManager) null);
+
+                try {
+                    Field errorPanelField = SimulatorUI.class.getDeclaredField("errorBannerPanel");
+                    errorPanelField.setAccessible(true);
+                    JPanel errorPanel = (JPanel) errorPanelField.get(ui);
+
+                    Field errorLabelField = SimulatorUI.class.getDeclaredField("errorLabel");
+                    errorLabelField.setAccessible(true);
+                    JLabel errorLabel = (JLabel) errorLabelField.get(ui);
+
+                    // 1. Simulate an assembly / execution error
+                    Map<String, String> errSnapshot = new HashMap<String, String>();
+                    errSnapshot.put(IPCConstants.KEY_STATUS_STR, "ERROR: Invalid opcode 'FOOBAR' at line 4");
+                    ui.applyStateSnapshot(errSnapshot);
+
+                    Color errBg = errorPanel.getBackground();
+                    Color errFg = errorLabel.getForeground();
+                    String errText = errorLabel.getText();
+
+                    results[0] = errBg.equals(SimulatorUI.ERR_BG)
+                            && errFg.equals(SimulatorUI.ERR_FG)
+                            && errText.contains("FOOBAR");
+
+                    // 2. Simulate subsequent successful execution
+                    Map<String, String> okSnapshot = new HashMap<String, String>();
+                    okSnapshot.put(IPCConstants.KEY_STATUS_STR, "READY");
+                    ui.applyStateSnapshot(okSnapshot);
+
+                    Color okBg = errorPanel.getBackground();
+                    results[1] = okBg.equals(SimulatorUI.BG_PANEL);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                ui.shutdown();
+                ui.dispose();
+            }
+        });
+
+        recordResult("Test 5a: Error Styling (#FFD2D2 background with red text)", results[0],
+                "Error banner correctly displays light-red background and visible red text on assembly error");
+        recordResult("Test 5b: Error Clearing & Normal Theme Reset", results[1],
+                "Error banner resets to light-grey #F2F2F2 theme upon valid execution");
     }
 
     private static JLabel findLabelWithText(Container container, String text) {
