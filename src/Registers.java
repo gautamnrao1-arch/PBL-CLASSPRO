@@ -3,14 +3,16 @@ import java.util.Arrays;
 /**
  * Registers.java
  * Stores 256 8-bit registers, 
- *Program Counter and STATUS flags.
+ * Program Counter and STATUS flags.
  */
 public class Registers {
 
     //Total number of registers
     public static final int TOTAL_REGISTERS = 256;
 
-    //STATUS register addresses
+    //Special Function Register addresses
+    public static final int INDF_ADDR = 0x00;           // Virtual INDF register
+    public static final int FSR_ADDR = 0x04;            // File Select Register
     public static final int STATUS_ADDR = 0x03;         // STATUS register in Bank 0
     public static final int STATUS_ADDR_BANK1 = 0x83;   // Mirrored STATUS register in Bank 1
 
@@ -43,9 +45,17 @@ public class Registers {
         reset();
     }
 
-    // Return the value stored at the specified register address.
-     
+    /**
+     * Return the value stored at the specified register address.
+     * Implements indirect addressing via INDF (0x00) and FSR (0x04).
+     */
     public int getRegister(int address) {
+        if (address == INDF_ADDR) {
+            int fsrVal = registers[FSR_ADDR] & 0xFF;
+            if (fsrVal != INDF_ADDR) {
+                address = fsrVal;
+            }
+        }
         if (address >= 0 && address < registers.length) {
             return registers[address] & 0xFF;
         }
@@ -55,9 +65,16 @@ public class Registers {
     /**
      * Store an 8-bit value into the specified register.
      * Keeps values constrained within the appropriate 8-bit range.
+     * Implements indirect addressing via INDF (0x00) and FSR (0x04).
      * Automatically keeps the STATUS register and its bank mirror in sync if written to.
      */
     public void setRegister(int address, int value) {
+        if (address == INDF_ADDR) {
+            int fsrVal = registers[FSR_ADDR] & 0xFF;
+            if (fsrVal != INDF_ADDR) {
+                address = fsrVal;
+            }
+        }
         if (address >= 0 && address < registers.length) {
             int val8 = value & 0xFF;
             registers[address] = val8;
@@ -201,7 +218,7 @@ public class Registers {
     }
 
     /**
-     * Sets or clears the Zero flag (Z) in the STATUS register.
+     * Sets or clears the Digit Carry flag (DC) in the STATUS register.
      */
     public void setDigitCarryFlag(int value) {
         if (value != 0) {

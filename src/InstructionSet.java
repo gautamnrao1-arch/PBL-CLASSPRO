@@ -5,20 +5,10 @@ import java.util.Arrays;
  * InstructionSet.java
  *
  * Responsible for identifying and describing the supported PIC16F72 instructions
- * for the Week 2 simulator.
+ * for the simulator.
  *
  * NOTE: This class is solely an information repository and catalog.
  * It does NOT execute instructions (CPU.java handles execution).
- *
- * Supported Instructions (8 total):
- * 1. MOVLW - Data Transfer
- * 2. MOVWF - Data Transfer
- * 3. ADDWF - Arithmetic
- * 4. SUBWF - Arithmetic
- * 5. ANDWF - Logical
- * 6. INCF  - Increment/Decrement
- * 7. GOTO  - Control Flow
- * 8. SLEEP - Program Termination
  */
 public class InstructionSet {
 
@@ -26,7 +16,8 @@ public class InstructionSet {
     private static final ArrayList<String> SUPPORTED_OPCODES = new ArrayList<String>(
         Arrays.asList(
             "MOVLW", "MOVWF", "ADDWF", "SUBWF", "ANDWF", "INCF", "GOTO", "SLEEP",
-            "PUSH", "POP", "ENQUEUE", "DEQUEUE"
+            "PUSH", "POP", "ENQUEUE", "DEQUEUE",
+            "XORWF", "XORLW", "RLF", "RRF", "BCF", "BSF", "BTFSC", "BTFSS", "DECFSZ", "MOVF", "CLRF"
         )
     );
 
@@ -64,14 +55,27 @@ public class InstructionSet {
         switch (canonical) {
             case "MOVLW":
             case "MOVWF":
+            case "MOVF":
+            case "CLRF":
                 return "Data Transfer";
             case "ADDWF":
             case "SUBWF":
                 return "Arithmetic";
             case "ANDWF":
+            case "XORWF":
+            case "XORLW":
                 return "Logical";
             case "INCF":
+            case "DECFSZ":
                 return "Increment/Decrement";
+            case "RLF":
+            case "RRF":
+                return "Shift/Rotate";
+            case "BCF":
+            case "BSF":
+            case "BTFSC":
+            case "BTFSS":
+                return "Bit-oriented";
             case "GOTO":
                 return "Control Flow";
             case "SLEEP":
@@ -101,14 +105,36 @@ public class InstructionSet {
                 return "Load literal value into W register.";
             case "MOVWF":
                 return "Move W register value into a file/data register.";
+            case "MOVF":
+                return "Move file register into destination (W or f).";
+            case "CLRF":
+                return "Clear file register to 0.";
             case "ADDWF":
                 return "Add W register and file register.";
             case "SUBWF":
                 return "Subtract W register from the file register according to the selected implementation semantics.";
             case "ANDWF":
                 return "Logical AND between W and file register.";
+            case "XORWF":
+                return "Exclusive OR W with file register.";
+            case "XORLW":
+                return "Exclusive OR literal with W.";
             case "INCF":
                 return "Increment a file register.";
+            case "DECFSZ":
+                return "Decrement file register, skip next instruction if zero.";
+            case "RLF":
+                return "Rotate file register left through Carry flag.";
+            case "RRF":
+                return "Rotate file register right through Carry flag.";
+            case "BCF":
+                return "Bit clear in file register.";
+            case "BSF":
+                return "Bit set in file register.";
+            case "BTFSC":
+                return "Bit test in file register, skip if clear (0).";
+            case "BTFSS":
+                return "Bit test in file register, skip if set (1).";
             case "GOTO":
                 return "Change program counter to target address.";
             case "SLEEP":
@@ -156,11 +182,22 @@ public class InstructionSet {
             case "GOTO":
             case "PUSH":
             case "ENQUEUE":
+            case "XORLW":
+            case "CLRF":
                 return 1;
             case "ADDWF":
             case "SUBWF":
             case "ANDWF":
             case "INCF":
+            case "XORWF":
+            case "RLF":
+            case "RRF":
+            case "BCF":
+            case "BSF":
+            case "BTFSC":
+            case "BTFSS":
+            case "DECFSZ":
+            case "MOVF":
                 return 2;
             default:
                 return 0;
