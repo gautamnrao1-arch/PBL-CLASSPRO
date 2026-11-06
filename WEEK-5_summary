@@ -6,7 +6,7 @@ The primary objective of Week 5 was to implement and validate a CRC-16 error-det
 
 ### 2. Implementation Completed
 
-**CRC-16 Assembly Implementation**
+CRC-16 Assembly Implementation
 - Implemented CRC-16/CCITT-FALSE in `crc16.asm`.
 - Used generator polynomial `0x1021`.
 - Initialized the 16-bit CRC value to `0xFFFF`.
@@ -18,7 +18,7 @@ The primary objective of Week 5 was to implement and validate a CRC-16 error-det
 - Implemented byte-processing and bit-processing loops.
 - Used indirect addressing through INDF and FSR to process input data stored in RAM.
 
-**Test Input**
+Test Input
 - Input string: `123456789`
 - Expected CRC result: `0x29B1`
 - Expected high byte: `0x29`
