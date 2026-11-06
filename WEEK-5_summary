@@ -1,0 +1,65 @@
+# WEEK 5 – PBL PROJECT STATUS
+## PIC16F72 Virtual Simulator
+
+### 1. Week 5 Objective
+The primary objective of Week 5 was to implement and validate a CRC-16 error-detection algorithm using PIC16F72 assembly language in the virtual simulator.
+
+### 2. Implementation Completed
+
+**CRC-16 Assembly Implementation**
+- Implemented CRC-16/CCITT-FALSE in `crc16.asm`.
+- Used generator polynomial `0x1021`.
+- Initialized the 16-bit CRC value to `0xFFFF`.
+- Implemented MSB-first processing without input or output reflection.
+- Used XOR operations, bit shifting, carry checking and conditional polynomial operations.
+- Represented the 16-bit CRC using two 8-bit registers:
+  - CRC_HIGH: RAM address `0x20`
+  - CRC_LOW: RAM address `0x21`
+- Implemented byte-processing and bit-processing loops.
+- Used indirect addressing through INDF and FSR to process input data stored in RAM.
+
+**Test Input**
+- Input string: `123456789`
+- Expected CRC result: `0x29B1`
+- Expected high byte: `0x29`
+- Expected low byte: `0xB1`
+
+### 3. Instruction Support
+The CRC implementation and its validation require additional PIC instructions, including:
+- XORWF and XORLW
+- RLF and RRF
+- BCF and BSF
+- BTFSC and BTFSS
+- DECFSZ
+- MOVF and CLRF
+- INDF/FSR indirect addressing
+
+### 4. Test Suite Development
+
+Created `CRC16AssemblyTest.java` to validate the assembly implementation and simulator functionality.
+
+Five test categories were included:
+
+1. Standard CRC test: `123456789` → `0x29B1`.
+2. Single-byte test: `A` → `0xB915`.
+3. Multi-byte test: `HELLO` → `0x49D6`.
+4. Instruction semantics validation.
+5. CoreProcess LOAD/RUN IPC integration and register snapshot validation.
+
+### 5. Integration
+- Used `CoreProcess.parseProgram()` to parse assembly instructions.
+- Executed the parsed assembly through the simulator's CPU.
+- Retrieved CRC results from the simulated registers.
+- Added an integration test to verify assembly loading and execution through CoreProcess IPC message handling.
+
+### 6. Files Added or Updated
+- `crc16.asm` – CRC-16 assembly implementation.
+- `CRC16AssemblyTest.java` – CRC validation and integration test suite.
+- Supporting CPU, instruction-set and register functionality required by the CRC implementation.
+
+### 7. Current Limitations / Pending Verification
+- The actual test execution output must be checked to confirm all five test categories pass.
+- Live UI-to-Core instruction synchronization is still not working correctly and requires further investigation.
+
+### 8. Week 5 Outcome
+Week 5 focused on extending the PIC16F72 simulator to execute a practical assembly-level CRC-16 algorithm. A dedicated test suite was also developed to validate CRC calculations, instruction behaviour and CoreProcess integration.
