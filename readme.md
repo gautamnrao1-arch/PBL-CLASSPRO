@@ -1,107 +1,106 @@
-<b><h1>PIC16F72 Virtual Simulator</h1></b> <br>
+# PIC16F72 Virtual Simulator
 
-<b>PROJECT TITLE</b> <br>
+## PROJECT TITLE
 
-Design and Develop virtual simulator of MICROCONTROLLER [ PIC16F72 ]<br>
+Design and Development of a Virtual Simulator for the PIC16F72 Microcontroller.
 
-<b>PROBLEM STATEMENT<b>
+## PROBLEM STATEMENT
 
-We have to understand the internal working of microcontroller PIC16F72. Because initially it would be difficult for the student to work with actual hardware component.<br> So to design VIRTUAL SIMULATOR [ SOFTWARE ] that can replicate the "basic working of PIC16F72" and can allow the students to see N learn teh internal opeartions.
+Understanding the internal working of a microcontroller such as the PIC16F72 can be challenging for students without access to physical hardware. This project provides a software-based virtual simulator that allows students to write and execute assembly instructions and observe the internal operations through a graphical interface.
 
-<b>PROJECT OBJECTIVE<b><br>
+## PROJECT OBJECTIVES
 
-1.Simulate virtually the working of PIC16F72 on laptop.<br>
-2.Have to execute assembly instructions.<br>
-3.Have to visualize CPU, register, memory(stack), GPIO, timer and interrupts.<br>
-4.To have a user friendly interface to test and learn [ very imp ] <br>
-5.Make it <b>compatible for both OS(operating system), LINUX OR WINDOWS</b><br>
+1. Simulate the basic working of the PIC16F72 microcontroller on a computer.
+2. Execute assembly instructions.
+3. Visualize CPU, registers, memory, stack, and execution status.
+4. Provide a user-friendly graphical interface for learning and testing.
+5. Support compatibility with both Windows and Linux operating systems.
 
-<b>PROBLEM SCOPE<b><br>
+## PROBLEM SCOPE
 
-<b>1.CPU Simulation</b><br>
+### 1. CPU Simulation
 
-<b>ALU Operations:</b> Performs arithmetic and logical operations like addition, subtraction, AND, OR and XOR on 8-bit data.<br> It also updates the required status flags.<br>
-<b>Working Register (W):</b> An 8-bit register used to temporarily store data during calculations and instruction execution.<br>
-<b>Instruction Decoding and Execution:</b> The simulator identifies the instruction and performs the required operation on the specified data or register.<br>
-<b>STATUS Register and Flags:</b> Stores important CPU status information, including Zero, Carry and Digit Carry flags, which change based on operations.<br>
-<b>Program Counter (PC):</b> Keeps track of the address of the next instruction to be executed and changes during jumps or calls.<br>
+- Simulates CPU instruction execution and arithmetic and logical operations.
+- Supports register operations and status flag updates.
+- Maintains the Working Register (W) and Program Counter (PC).
+- Supports instructions such as `MOVLW`, `MOVWF`, `ADDWF`, `SUBWF`, `XORWF`, `XORLW`, `RLF`, `RRF`, `BSF`, `BCF`, `BTFSC`, `BTFSS`, `DECFSZ`, `MOVF`, and `CLRF`.
 
-<b>2.MEMORY SIMULATION</b><br>
+### 2. Memory Simulation
 
-<b>Program Memory:</b> This is where the instructions or program of the PIC16F72 are stored. The Program Counter helps the CPU know 
-which instruction to execute next.<br>
-<b>Data Memory or RAM:</b> Used to store data while the program is running. It contains different registers and memory locations used by the CPU.<br>
-<b>SFR (Special Function Registers):</b> These are special registers used to control and monitor different parts of the microcontroller, like CPU 
-status, ports, timers, etc.<br>
-<b>Stack Mechanism:</b> The stack temporarily stores return addresses when the program calls another function or subroutine.<br>
-It helps the processor know where to come back after the subroutine finishes.<br>
+- Simulates program execution using memory and register components.
+- Supports direct and indirect memory access through INDF and FSR.
+- Includes stack and FIFO queue functionality.
+- Displays relevant register and memory values during execution.
 
-* <b>Stack Pointer or Stack Control -</b> PIC16F72 does not have a normal user-accessible Stack Pointer register. It uses a hardware stack to manage return addresses.<br>
-* <b>CALL –</b> Used to go to a subroutine. The return address is saved in the stack.<br>
-* <b>RETURN –</b> Used to come back from the subroutine to the main program.<br>
-* <b>RETLW –</b> Returns from a subroutine and also loads a value into the W register.<br>
-* <b>RETFIE –</b> Used to return from an interrupt routine.<br>
+### 3. Assembly Program Execution
 
-<b>3.Peripheral Simulation</b><br>
+- Allows users to enter assembly instructions through the simulator interface.
+- Supports loading, running, stepping through, and resetting programs.
+- Processes assembly instructions through the Core Simulator.
+- Supports label and symbol resolution in assembly programs.
 
-<b>GPIO/PORT Operations:</b> It is used for the PIC16F72 to interact with external devices by receiving inputs and giving outputs.<br> In the simulator, we need to represent how the PIC’s PORTs work during program execution.<br>
-<b>Timer0:</b> It is used to keep track of timing and counting in the PIC16F72. In our simulator, we need to represent its counting process and how it behaves when the timer reaches its limit.<br>
-<b>Interrupt Mechanism:</b> It allow the PIC to respond to an event that needs immediate attention while the program is running. The simulator should represent how the processor handles such events. 
-  
-<b>4.GRAPHICAL USER INTERFACE</b><br>
+### 4. Peripheral and Data Handling
 
-<b>Memory Visualization:</b> In our simulator  we can show the memory addresses and their values so the user can see how memory <br>changes during execution.<br>
-<b>Register Visualization:</b> The simulator can display important register values and show how they change when instructions are executed.<br>
-<b>GPIO/PORT Status:</b> It should provide a simple way to see the current state of the PIC16F72's GPIO/PORTs while the program is running. This helps the user understand how the input and output values are changing.<br>
-<b>Timer and Interrupt Status:</b> It should show the current state of Timer0 and indicate important timer events. It should also make the interrupt status visible when an interrupt occurs.<br>
+- Provides simulator support for memory, stack, and FIFO queue operations.
+- Supports CRC-16/CCITT-FALSE implementation using assembly instructions.
+- Uses polynomial `0x1021` and initial CRC value `0xFFFF`.
+- Produces the expected CRC value `0x29B1` for the standard input `123456789`.
 
-<b>5.Status/Flag Information</b><br>
+### 5. Graphical User Interface
 
-<b>STATUS Register:</b><br>The STATUS register provides information about the current condition and results of operations in the PIC16F72.<br>
-<b>Carry Flag (C):</b> It indicates whether a carry occurs during an arithmetic operation.<br>
-<b>Digit Carry Flag (DC):</b> It indicates a carry from the lower 4 bits during an arithmetic operation.<br>
-<b>Zero Flag (Z):</b> It is set when the result of an operation is zero.<br>
-<b>Time-out Flag (TO):</b> It indicates a Watchdog Timer time-out condition.<br>
-<b>Power-down Flag (PD):</b> It indicates the power-down or Sleep condition of the processor.<br>
-<b>Bank Select Bits (RP0/RP1):</b> These bits are used to select the required memory bank.<br>
+- Provides an assembly code editor.
+- Includes LOAD, RUN, STEP, RESET, and RECONNECT controls.
+- Displays CPU and register information.
+- Provides memory visualization.
+- Displays execution status, program counter, and simulator logs.
 
-<b>6.Interrupt Mechanism</b><br>
+### 6. Inter-Process Communication (IPC) Mechanism
 
-<b>Interrupt</b><br>An interrupt allows the PIC16F72 to respond to an important event while the main program is running.<br>
+The simulator uses three independent processes:
 
-<b>Interrupt Flag:</b> It indicates that an interrupt event has occurred.<br>
-<b>Interrupt Enable:</b> It allows a particular interrupt source to generate an interrupt.<br>
-<b>Global Interrupt Enable:</b> It enables or disables the interrupt system of the processor.<br>
-<b>Interrupt Service Routine (ISR):</b> It is the routine executed by the processor when an interrupt occurs.<br>
-<b>Interrupt Handling:</b> The processor handles the interrupt and then returns to the main program.<br>
-<b>Simulator Requirement:</b> The simulator should show the status flags and interrupt events during program execution.<br>                                          
+- UI Process: Handles user interaction and displays simulator information.
+- Core Process: Handles assembly processing, instruction execution, and simulator state.
+- Logger Process: Receives and manages execution-related log messages.
 
-<b>SELECTED PROGRAMMIGN LANGUAGE<b><br>
+## SELECTED PROGRAMMING LANGUAGE
 
-<b>Java</b><br>
-Java language is been preferred for this project.<br>
+### Java
 
-<b>SYSTEM DESIGN/ARCHITECTURE<b><br>
+Java is the primary programming language used for this project.
 
+### Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| Java | Core simulator implementation |
+| Java Swing | Graphical User Interface |
+| JNA (Java Native Access) | Windows Named Pipe integration |
+| Windows Named Pipes | Inter-process communication on Windows |
+| POSIX FIFO | Inter-process communication on Linux |
+| VS Code | Development environment |
+
+## SYSTEM DESIGN / ARCHITECTURE
+
+```text
                --------------------      -------------------
                | UI Process       |      |                 |
-        ------>| SimulatorUI.java | ---> |   IPCManager    | 
+        ------>| SimulatorUI.java | ---> |   IPCManager    |
         |      |                  |      |                 |
-        |      --------------------      ------------------- 
+        |      --------------------      -------------------
         |                                       |
         |                                       |
-        |                                       ▼ 
+        |                                       ▼
         |                               --------------------
         |                               |                  |
         |                               |    IPCFactory    |
         |                               |                  |
         |                               --------------------
-        |                                        |       
-        |                                        |  
-        |                                        ▼ 
+        |                                        |
+        |                                        |
+        |                                        ▼
         |               ----------------------------------------------------------------
         |               |                                                              |
-        |               ▼                                                              ▼ 
+        |               ▼                                                              ▼
         |       ----------------------                                         ------------------
         |       |                    |                                         |                |
         |       | Windows Named Pipe |                                         | POSIX FIFO     |
@@ -109,7 +108,7 @@ Java language is been preferred for this project.<br>
         |       |                    |                                         |                |
         |       ----------------------                                         ------------------
         |                |                                                            |
-        |                ▼                                                            ▼ 
+        |                ▼                                                            ▼
         |               ---------------------------------------------------------------
         |                                           |
         |                                           |
@@ -123,40 +122,77 @@ Java language is been preferred for this project.<br>
         |                               |    |                                  |
         |                               |    |                                  |
         |                               |    |                                  |
-        |                               ▼    |                                  ▼ 
+        |                               ▼    |                                  ▼
         |                       -------------------                     --------------------
         |                       | CPU / Memory /  |                     | Logger Process   |
         <---------------------- | Stack / Queue   |                     | LoggerProcess    |
                                 |                 |                     |                  |
                                 -------------------                     --------------------
                                                                                 |
-                                                                                ▼ 
-                                                                        -----------------
-                                                                        | Log Files     | 
-                                                                        |               |
-                                                                        -----------------  
-                                        
-<br>
-<b>WEEK 4 IPC MECHANISM EXPLAINATION[why we have choosen this method]</b><br>
-<b>IPC Components and Responsibilities</b>
+                                                                                ▼
+                                                                         -----------------
+                                                                         | Log Files     |
+                                                                         |               |
+                                                                         -----------------
+```
 
-| File Name | Responsibility | Description |
-|---|---|---|
-| `IPCMessage.java` | Message Contract | Defines the structure of an IPC message and how its data is represented. |
-| `IPCConstants.java` | Shared Constants | Stores common names, message types, commands, and other IPC-related constants, including pipe or FIFO identifiers where applicable. |
-| `IPCManager.java` | Communication Interface | Defines the common interface for establishing connections, sending and receiving messages, and closing IPC connections. |
-| `IPCFactory.java` | Backend Selection | Selects the appropriate Windows or Linux IPC implementation based on the operating system or configuration. |
-| `WindowsNamedPipeIPC.java` | Windows Transport | Implements interprocess communication using Windows Named Pipes to send and receive data between processes. |
-| `LinuxFifoIPC.java` | Linux Transport | Implements interprocess communication using POSIX named pipes (FIFOs) on Linux systems. |
-| `ProcessManager.java` | Lifecycle Management | Starts and monitors child processes and coordinates their termination and resource cleanup. |
-| `LoggerProcess.java` | Logging Worker | Runs as a separate process, receives log events through IPC, and forwards them to the logging system. |
-| `CoreProcess.java` | Execution Worker | Runs as a separate process, handles IPC requests, and connects them to the simulator's execution logic. |
+## HOW TO RUN THE SIMULATOR
 
+### Prerequisites
 
+- Java Development Kit (JDK).
+- JNA library files available in the `lib` folder.
+- Windows or Linux operating system.
 
-<b>TEAM MEMBERS AND RESPONSIBILITY<b> <br>
+### Windows – Compile and Execute
 
-Gautam(team Leader): Integration of IPC Mechanism<br>
-Reeva : Core components[CPU. Memory, Stack....]<br>
-Yuktha: GUI component<br>
-Sanvi: Loggers Status[Handling all logs status]<br> 
+Open the terminal in the project root directory.
+
+Step 1: Compile the Java source files
+
+```powershell
+javac -cp "lib/*" -d bin src/*.java
+```
+
+Step 2: Run the simulator
+
+```powershell
+java --enable-native-access=ALL-UNNAMED -cp "bin;lib/*" Main
+```
+
+### Linux – Compile and Execute
+
+Step 1: Compile the Java source files
+
+```bash
+javac -cp "lib/*" -d bin src/*.java
+```
+
+Step 2: Run the simulator
+
+```bash
+java --enable-native-access=ALL-UNNAMED -cp "bin:lib/*" Main
+```
+
+Note: Run these commands from the project root directory. They assume Java source files are directly inside `src`, dependencies are inside `lib`, and `Main` is the entry point.
+
+## TEAM MEMBERS AND RESPONSIBILITIES
+
+| Team Member | Responsibility |
+|---|---|
+| Gautam (Team Leader) | Integration of IPC Mechanism |
+| Reeva | Core components (CPU, Memory, Stack, etc.) |
+| Yuktha | GUI component |
+| Sanvi | Logger implementation and log management |
+
+## FUTURE SCOPE
+
+- Improve live synchronization between the assembly editor and Core process.
+- Enhance IPC reconnection and recovery mechanisms.
+- Extend support for additional PIC16F72 instructions and peripherals.
+- Improve Timer0, GPIO, and interrupt simulation.
+- Perform further cross-platform testing and validation.
+
+---
+
+### PIC16F72 Virtual Simulator – A Java-based, cross-platform, multi-process microcontroller simulation project.
