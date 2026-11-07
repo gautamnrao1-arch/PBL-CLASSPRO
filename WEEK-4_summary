@@ -1,0 +1,85 @@
+# WEEK 4 STATUS REPORT
+## Implementation of Inter-Process Communication (IPC) Architecture
+
+## 1. Objective
+The primary objective of Week 4 was to implement an Inter-Process Communication (IPC) architecture that enables the User Interface (UI), Core Simulator, and Logger to operate as independent processes while exchanging information reliably.
+
+## 2. Work Completed
+
+### A. Three-Process Architecture
+
+The simulator was structured into three independent processes:
+
+- UI Process: Handles user interaction, assembly program input, simulator controls, and display of execution results.
+- Core Process: Handles instruction parsing, CPU execution, register operations, memory management, and simulator state.
+- Logger Process: Receives execution-related messages and maintains simulator logs.
+
+### B. Cross-Platform IPC Implementation
+
+Implemented a common IPC architecture supporting different communication mechanisms depending on the operating system:
+
+- Windows: Named Pipes implemented using Java Native Access (JNA).
+- Linux: FIFO (First-In, First-Out) named pipes.
+
+This approach provides a common communication interface while allowing platform-specific implementations.
+
+### C. IPC Communication Components
+
+Implemented the following components:
+
+- `IPCMessage.java` – Defines the common message structure exchanged between processes.
+- `IPCConstants.java` – Maintains communication channels, message types, and protocol constants.
+- `IPCManager.java` – Manages IPC connections and message transmission/reception.
+- `IPCFactory.java` – Selects the appropriate IPC implementation based on the operating system.
+- `WindowsNamedPipeIPC.java` – Handles Windows Named Pipe communication.
+- `LinuxFifoIPC.java` – Handles Linux FIFO communication.
+
+### D. Process Management and Integration
+
+- `ProcessManager.java` – Responsible for launching and managing the UI, Core, and Logger processes.
+- `Main.java` – Acts as the main entry point and dispatches execution based on process-role arguments.
+- `CoreProcess.java` – Handles incoming simulator commands and executes the corresponding operations.
+- `LoggerProcess.java` – Handles logging messages received through IPC.
+
+## 3. Integration Achievements
+
+- Established the structure for independent execution of the UI, Core, and Logger processes.
+- Integrated a common IPC messaging architecture.
+- Implemented operating-system-specific communication backends.
+- Connected simulator commands and execution-state communication through the IPC layer.
+- Added a RECONNECT control in the UI to attempt restoration of the UI-Core IPC connection.
+
+## 4. Testing and Verification
+
+The following areas were considered for Week 4 testing:
+
+- Independent process launching and role identification.
+- UI-to-Core communication.
+- Assembly program loading and execution.
+- Core-to-UI execution-state updates.
+- Logger process communication.
+- IPC connection recovery.
+- Cross-platform IPC implementation.
+
+*Individual test outcomes and verification evidence are documented separately in the Week 4 Test Results.*
+
+## 5. Challenges and Observations
+
+- Managing communication between independent Java processes.
+- Handling different IPC mechanisms across Windows and Linux.
+- Maintaining consistent message formats across communication channels.
+- Coordinating process startup and connection availability.
+- Ensuring reliable synchronization between the UI and Core processes.
+
+## 6. Future Scope
+
+- Improve live synchronization between the assembly editor and Core process so that newly added instructions can be communicated during execution without restarting the program.
+- Improve automatic IPC reconnection and recovery after unexpected process disconnections.
+- Strengthen cross-platform testing and communication reliability.
+- Improve process lifecycle management and error handling.
+
+## 7. Conclusion
+
+Week 4 focused on establishing the multi-process architecture and implementing the foundational IPC communication layer for the PIC16F72 Virtual Simulator. The UI, Core Simulator, and Logger were structured as separate processes, with a common communication interface supporting Windows Named Pipes and Linux FIFO mechanisms.
+
+This architecture provides the foundation for independent process execution, modular integration, and future improvements to real-time communication and synchronization.
