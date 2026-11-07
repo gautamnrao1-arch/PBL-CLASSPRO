@@ -131,3 +131,157 @@
 [2026-11-04 20:18:39.581] [LOG] SHUTDOWN: Core simulator stopping by request.
 [2026-11-04 20:18:39.583] [SHUTDOWN] Core shutting down
 [2026-11-04 20:18:39.586] [LOGGER_SHUTDOWN] Logger process cleanly shut down.
+[2026-11-05 21:09:30.589] [LOGGER_INIT] Connected to Core process. Logging to 'pic16f72_simulator.log'
+[2026-11-05 21:09:30.591] [LOG] Core simulator process initialized. PIC16F72 CPU ready.
+[2026-11-05 21:09:31.395] [LOG] Core process connected to UI process on channel 'ui_core'
+[2026-11-05 21:36:45.688] [LOG] LOAD SUCCESS: Loaded 1 instruction(s) into memory.
+[2026-11-05 21:37:47.355] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 21:37:56.432] [LOG] LOAD SUCCESS: Loaded 1 instruction(s) into memory.
+[2026-11-05 21:38:49.657] [LOG] STEP ERROR: Unknown opcode encountered: MOVW
+[2026-11-05 21:40:28.032] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 21:40:33.463] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-05 21:42:28.955] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 21:43:25.681] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-05 21:43:32.468] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 21:50:10.809] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 21:51:06.689] [LOG] STEP: PC=0x0003, W=0x10, Status=TERMINATED
+[2026-11-05 21:53:00.988] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-05 21:53:29.865] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 21:53:32.436] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-05 21:53:36.828] [LOG] RUN: Completed. Terminated=true, PC=0x0003, W=0x10
+[2026-11-05 21:56:18.074] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 21:56:20.244] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-05 21:56:38.255] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 21:56:45.769] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 21:58:10.004] [LOG] STEP: PC=0x0003, W=0x10, Status=TERMINATED
+[2026-11-05 22:02:12.723] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-05 22:03:34.248] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 22:03:36.047] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-05 22:07:16.250] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 22:07:20.310] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-05 22:07:24.968] [LOG] RUN: Completed. Terminated=true, PC=0x0003, W=0x10
+[2026-11-05 22:07:57.719] [LOG] RUN: Completed. Terminated=true, PC=0x0003, W=0x10
+[2026-11-05 22:09:14.578] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 22:11:32.944] [LOG] LOAD SUCCESS: Loaded 7 instruction(s) into memory.
+[2026-11-05 22:11:46.052] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 22:11:54.675] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 22:12:34.533] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 22:12:35.696] [LOG] LOAD SUCCESS: Loaded 7 instruction(s) into memory.
+[2026-11-05 22:12:37.620] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 22:12:39.821] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 22:13:36.777] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 22:13:38.968] [LOG] LOAD SUCCESS: Loaded 7 instruction(s) into memory.
+[2026-11-05 22:13:40.340] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 22:14:06.675] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 22:14:37.885] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-05 22:14:39.255] [LOG] LOAD SUCCESS: Loaded 7 instruction(s) into memory.
+[2026-11-05 22:14:44.286] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 22:16:25.087] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 22:17:17.631] [LOG] STEP: PC=0x0003, W=0x20, Status=EXECUTING
+[2026-11-05 22:17:33.844] [LOG] STEP: PC=0x0004, W=0x20, Status=EXECUTING
+[2026-11-05 22:17:43.682] [LOG] STEP: PC=0x0005, W=0x30, Status=EXECUTING
+[2026-11-05 22:17:46.663] [LOG] STEP: PC=0x0006, W=0x30, Status=EXECUTING
+[2026-11-05 22:17:49.077] [LOG] STEP: PC=0x0007, W=0x30, Status=TERMINATED
+[2026-11-05 22:17:54.660] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-05 22:21:11.232] [LOG] LOAD SUCCESS: Loaded 7 instruction(s) into memory.
+[2026-11-05 22:21:13.809] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-05 22:21:20.816] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-05 22:21:28.368] [LOG] STEP: PC=0x0003, W=0x20, Status=EXECUTING
+[2026-11-05 22:21:40.983] [LOG] STEP: PC=0x0004, W=0x20, Status=EXECUTING
+[2026-11-05 22:21:50.703] [LOG] STEP: PC=0x0005, W=0x30, Status=EXECUTING
+[2026-11-05 22:21:58.682] [LOG] STEP: PC=0x0006, W=0x30, Status=EXECUTING
+[2026-11-05 22:22:01.665] [LOG] STEP: PC=0x0007, W=0x30, Status=TERMINATED
+[2026-11-05 22:22:08.699] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 09:39:00.443] [LOG] SHUTDOWN: Core simulator stopping by request.
+[2026-11-06 09:39:00.454] [SHUTDOWN] Core shutting down
+[2026-11-06 09:39:00.469] [LOGGER_SHUTDOWN] Logger process cleanly shut down.
+[2026-11-06 13:23:46.547] [LOGGER_INIT] Connected to Core process. Logging to 'pic16f72_simulator.log'
+[2026-11-06 13:23:46.551] [LOG] Core simulator process initialized. PIC16F72 CPU ready.
+[2026-11-06 13:23:47.539] [LOG] Core process connected to UI process on channel 'ui_core'
+[2026-11-06 13:24:02.265] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:24:03.411] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-06 13:24:05.296] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-06 13:24:06.085] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-06 13:24:06.819] [LOG] STEP: PC=0x0003, W=0x10, Status=TERMINATED
+[2026-11-06 13:24:08.397] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:24:24.449] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:24:26.721] [LOG] LOAD SUCCESS: Loaded 5 instruction(s) into memory.
+[2026-11-06 13:24:28.678] [LOG] STEP: PC=0x0001, W=0x15, Status=EXECUTING
+[2026-11-06 13:24:29.468] [LOG] STEP: PC=0x0002, W=0x15, Status=EXECUTING
+[2026-11-06 13:24:30.183] [LOG] STEP: PC=0x0003, W=0x10, Status=EXECUTING
+[2026-11-06 13:24:30.865] [LOG] STEP: PC=0x0004, W=0x10, Status=EXECUTING
+[2026-11-06 13:24:31.519] [LOG] STEP: PC=0x0005, W=0x10, Status=TERMINATED
+[2026-11-06 13:24:35.266] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:24:39.046] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:25:08.476] [LOG] LOAD SUCCESS: Loaded 5 instruction(s) into memory.
+[2026-11-06 13:25:09.894] [LOG] STEP: PC=0x0001, W=0x08, Status=EXECUTING
+[2026-11-06 13:25:10.410] [LOG] STEP: PC=0x0002, W=0x08, Status=EXECUTING
+[2026-11-06 13:25:10.970] [LOG] STEP: PC=0x0003, W=0x03, Status=EXECUTING
+[2026-11-06 13:25:11.560] [LOG] STEP: PC=0x0004, W=0x03, Status=EXECUTING
+[2026-11-06 13:25:12.147] [LOG] STEP: PC=0x0005, W=0x03, Status=TERMINATED
+[2026-11-06 13:25:14.232] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:25:16.124] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:25:26.975] [LOG] LOAD SUCCESS: Loaded 5 instruction(s) into memory.
+[2026-11-06 13:25:34.904] [LOG] STEP: PC=0x0001, W=0x0F, Status=EXECUTING
+[2026-11-06 13:25:35.622] [LOG] STEP: PC=0x0002, W=0x0F, Status=EXECUTING
+[2026-11-06 13:25:36.308] [LOG] STEP: PC=0x0003, W=0x03, Status=EXECUTING
+[2026-11-06 13:25:37.006] [LOG] STEP: PC=0x0004, W=0x03, Status=EXECUTING
+[2026-11-06 13:25:37.677] [LOG] STEP: PC=0x0005, W=0x03, Status=TERMINATED
+[2026-11-06 13:25:45.749] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:25:47.177] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:25:58.407] [LOG] LOAD SUCCESS: Loaded 5 instruction(s) into memory.
+[2026-11-06 13:25:59.570] [LOG] STEP: PC=0x0001, W=0x0F, Status=EXECUTING
+[2026-11-06 13:25:59.975] [LOG] STEP: PC=0x0002, W=0x0F, Status=EXECUTING
+[2026-11-06 13:26:00.551] [LOG] STEP: PC=0x0003, W=0x30, Status=EXECUTING
+[2026-11-06 13:26:01.018] [LOG] STEP ERROR: Unknown opcode encountered: IORWF
+[2026-11-06 13:26:01.561] [LOG] STEP: PC=0x0005, W=0x30, Status=TERMINATED
+[2026-11-06 13:26:09.418] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:26:10.529] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:26:12.068] [LOG] LOAD SUCCESS: Loaded 5 instruction(s) into memory.
+[2026-11-06 13:26:14.057] [LOG] STEP: PC=0x0001, W=0x0F, Status=EXECUTING
+[2026-11-06 13:26:14.776] [LOG] STEP: PC=0x0002, W=0x0F, Status=EXECUTING
+[2026-11-06 13:26:15.457] [LOG] STEP: PC=0x0003, W=0x30, Status=EXECUTING
+[2026-11-06 13:26:16.500] [LOG] STEP ERROR: Unknown opcode encountered: IORWF
+[2026-11-06 13:26:52.277] [LOG] STEP: PC=0x0005, W=0x30, Status=TERMINATED
+[2026-11-06 13:27:06.493] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:27:09.410] [LOG] LOAD SUCCESS: Loaded 7 instruction(s) into memory.
+[2026-11-06 13:27:11.009] [LOG] STEP: PC=0x0001, W=0x25, Status=EXECUTING
+[2026-11-06 13:27:11.628] [LOG] STEP: PC=0x0002, W=0x25, Status=EXECUTING
+[2026-11-06 13:27:12.153] [LOG] STEP: PC=0x0003, W=0x10, Status=EXECUTING
+[2026-11-06 13:27:12.712] [LOG] STEP: PC=0x0004, W=0x10, Status=EXECUTING
+[2026-11-06 13:27:13.211] [LOG] STEP: PC=0x0005, W=0x10, Status=EXECUTING
+[2026-11-06 13:27:13.741] [LOG] STEP: PC=0x0006, W=0x25, Status=EXECUTING
+[2026-11-06 13:27:14.410] [LOG] STEP: PC=0x0007, W=0x25, Status=TERMINATED
+[2026-11-06 13:27:15.514] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:28:00.464] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:28:01.834] [LOG] LOAD SUCCESS: Loaded 10 instruction(s) into memory.
+[2026-11-06 13:28:04.163] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-06 13:28:04.939] [LOG] STEP: PC=0x0002, W=0x10, Status=EXECUTING
+[2026-11-06 13:28:06.232] [LOG] STEP: PC=0x0003, W=0x20, Status=EXECUTING
+[2026-11-06 13:28:06.854] [LOG] STEP: PC=0x0004, W=0x20, Status=EXECUTING
+[2026-11-06 13:28:07.631] [LOG] STEP: PC=0x0005, W=0x30, Status=EXECUTING
+[2026-11-06 13:28:08.454] [LOG] STEP: PC=0x0006, W=0x30, Status=EXECUTING
+[2026-11-06 13:28:09.390] [LOG] STEP: PC=0x0007, W=0x10, Status=EXECUTING
+[2026-11-06 13:28:10.824] [LOG] STEP: PC=0x0008, W=0x20, Status=EXECUTING
+[2026-11-06 13:28:12.461] [LOG] STEP: PC=0x0009, W=0x30, Status=EXECUTING
+[2026-11-06 13:28:13.095] [LOG] STEP: PC=0x000A, W=0x30, Status=TERMINATED
+[2026-11-06 13:28:14.674] [LOG] STEP ERROR: Simulator execution already terminated.
+[2026-11-06 13:28:27.189] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:28:29.752] [LOG] SHUTDOWN: Core simulator stopping by request.
+[2026-11-06 13:28:29.753] [SHUTDOWN] Core shutting down
+[2026-11-06 13:28:29.754] [LOGGER_SHUTDOWN] Logger process cleanly shut down.
+[2026-11-06 13:29:38.167] [LOGGER_INIT] Connected to Core process. Logging to 'pic16f72_simulator.log'
+[2026-11-06 13:29:38.171] [LOG] Core simulator process initialized. PIC16F72 CPU ready.
+[2026-11-06 13:29:39.016] [LOG] Core process connected to UI process on channel 'ui_core'
+[2026-11-06 13:29:50.857] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-06 13:29:52.191] [LOG] STEP: PC=0x0001, W=0x10, Status=EXECUTING
+[2026-11-06 13:29:53.094] [LOG] STEP ERROR: Unknown opcode encountered: INVALID
+[2026-11-06 13:30:05.655] [LOG] STEP: PC=0x0003, W=0x10, Status=TERMINATED
+[2026-11-06 13:30:17.902] [LOG] RESET: Microcontroller CPU, registers, memory and stack reset to initial state.
+[2026-11-06 13:30:19.177] [LOG] LOAD SUCCESS: Loaded 3 instruction(s) into memory.
+[2026-11-06 13:30:21.652] [LOG] STEP ERROR: Error executing instruction MOVLW: For input string: "XYZ"
+[2026-11-06 13:30:35.112] [LOG] STEP: PC=0x0002, W=0x00, Status=EXECUTING
+[2026-11-06 13:30:36.714] [LOG] STEP: PC=0x0003, W=0x00, Status=TERMINATED
+[2026-11-06 13:30:43.559] [LOG] SHUTDOWN: Core simulator stopping by request.
+[2026-11-06 13:30:43.560] [SHUTDOWN] Core shutting down
+[2026-11-06 13:30:43.562] [LOGGER_SHUTDOWN] Logger process cleanly shut down.
