@@ -180,7 +180,7 @@ Note: Run these commands from the project root directory. They assume Java sourc
 
 | Team Member | Responsibility |
 |---|---|
-| Gautam (Team Leader) | Integration of IPC Mechanism |
+| Gautam (Team Leader) | Integration of IPC Mechanism, CRC build |
 | Reeva | Core components (CPU, Memory, Stack, etc.) |
 | Yuktha | GUI component |
 | Sanvi | Logger implementation and log management |
